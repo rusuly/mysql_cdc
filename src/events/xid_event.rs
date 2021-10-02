@@ -1,5 +1,5 @@
 use byteorder::{LittleEndian, ReadBytesExt};
-use std::io::{Cursor, Read};
+use std::io::Cursor;
 
 /// Represents a transaction commit event.
 /// <a href="https://mariadb.com/kb/en/library/xid_event/">See more</a>

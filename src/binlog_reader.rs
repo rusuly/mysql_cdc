@@ -18,7 +18,7 @@ pub struct BinlogReader {
 impl BinlogReader {
     pub fn new(mut stream: File) -> Result<Self, String> {
         let mut header = [0; constants::FIRST_EVENT_POSITION];
-        stream.read_exact(&mut header);
+        stream.read_exact(&mut header).unwrap();
 
         if header != MAGIC_NUMBER {
             return Err(String::from("Invalid binary log file header"));
@@ -43,7 +43,7 @@ impl Iterator for BinlogReader {
         // Parse header
         let mut header_buffer = [0; EVENT_HEADER_SIZE];
         let header = match self.stream.read_exact(&mut header_buffer) {
-            Ok(x) => EventHeader::parse(&header_buffer),
+            Ok(_x) => EventHeader::parse(&header_buffer),
             Err(e) => match e.kind() {
                 ErrorKind::UnexpectedEof => return None,
                 _ => panic!("Invalid file format"),
@@ -53,15 +53,14 @@ impl Iterator for BinlogReader {
         let payload_length = header.event_length as usize - EVENT_HEADER_SIZE;
         if payload_length as usize > constants::PAYLOAD_BUFFER_SIZE {
             let mut vec: Vec<u8> = vec![0; payload_length];
-            let slice = &mut vec[0..payload_length];
 
-            self.stream.read_exact(slice);
-            let binlog_event = self.parser.parse_event(&header, slice);
+            self.stream.read_exact(&mut vec).unwrap();
+            let binlog_event = self.parser.parse_event(&header, &vec);
             Some((header, binlog_event))
         } else {
             let slice = &mut self.payload_buffer[0..payload_length];
 
-            self.stream.read_exact(slice);
+            self.stream.read_exact(slice).unwrap();
             let binlog_event = self.parser.parse_event(&header, slice);
             Some((header, binlog_event))
         }

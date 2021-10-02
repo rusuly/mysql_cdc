@@ -13,10 +13,7 @@ impl ChecksumType {
         match code {
             0 => ChecksumType::NONE,
             1 => ChecksumType::CRC32,
-            _ => panic!(format!(
-                "The master checksum type is not supported: {}",
-                code
-            )),
+            _ => panic!("The master checksum type is not supported: {}", code),
         }
     }
 }

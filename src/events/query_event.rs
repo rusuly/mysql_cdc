@@ -37,13 +37,18 @@ impl QueryEvent {
         let status_variable_length = cursor.read_u16::<LittleEndian>().unwrap();
 
         let mut status_variables: Vec<u8> = vec![0; status_variable_length as usize];
-        cursor.read_exact(&mut status_variables[0..status_variable_length as usize]);
+        cursor
+            .read_exact(&mut status_variables[0..status_variable_length as usize])
+            .unwrap();
 
         let mut database_name: Vec<u8> = vec![0; database_name_length as usize];
-        cursor.read_exact(&mut database_name[0..database_name_length as usize]);
+        cursor
+            .read_exact(&mut database_name[0..database_name_length as usize])
+            .unwrap();
+
         let database_name = String::from_utf8(database_name).unwrap();
 
-        cursor.seek(SeekFrom::Current(1));
+        cursor.seek(SeekFrom::Current(1)).unwrap();
 
         let mut sql_statement = String::new();
         cursor.read_to_string(&mut sql_statement).unwrap();

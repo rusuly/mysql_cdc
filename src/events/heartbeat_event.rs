@@ -1,4 +1,3 @@
-use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::{Cursor, Read};
 
 /// The event is sent from master to the client for keep alive feature.

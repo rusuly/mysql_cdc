@@ -1,4 +1,3 @@
-use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::{Cursor, Read, Seek, SeekFrom};
 
 /// Represents query that caused row events.
@@ -13,7 +12,7 @@ pub struct RowsQueryEvent {
 impl RowsQueryEvent {
     /// Supports MySQL 5.6+.
     pub fn parse_mysql(cursor: &mut Cursor<&[u8]>) -> Self {
-        cursor.seek(SeekFrom::Current(1));
+        cursor.seek(SeekFrom::Current(1)).unwrap();
 
         let mut query = String::new();
         cursor.read_to_string(&mut query).unwrap();

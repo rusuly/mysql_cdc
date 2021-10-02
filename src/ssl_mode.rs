@@ -1,5 +1,5 @@
 /// Represents the SSL strategy used to connect to the server.
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum SslMode {
     /// Establishes an unencrypted connection.
     DISABLED,

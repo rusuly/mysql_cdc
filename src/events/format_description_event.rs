@@ -30,7 +30,7 @@ impl FormatDescriptionEvent {
 
         // Read server version
         let mut server_version = [0u8; 50];
-        cursor.read_exact(&mut server_version);
+        cursor.read_exact(&mut server_version).unwrap();
         let mut slice: &[u8] = &server_version;
         if let Some(zero_index) = server_version.iter().position(|&b| b == 0) {
             slice = &server_version[..zero_index];
@@ -38,12 +38,14 @@ impl FormatDescriptionEvent {
         let server_version = std::str::from_utf8(slice).unwrap().to_string();
 
         // Redundant timestamp & header length which is always 19
-        cursor.seek(SeekFrom::Current(5));
+        cursor.seek(SeekFrom::Current(5)).unwrap();
 
         // Get size of the event payload to determine beginning of the checksum part
-        cursor.seek(SeekFrom::Current(
-            EventType::FORMAT_DESCRIPTION_EVENT as i64 - 1,
-        ));
+        cursor
+            .seek(SeekFrom::Current(
+                EventType::FORMAT_DESCRIPTION_EVENT as i64 - 1,
+            ))
+            .unwrap();
         let payload_length = cursor.read_u8().unwrap();
 
         let mut checksum_type = ChecksumType::NONE;
@@ -52,7 +54,7 @@ impl FormatDescriptionEvent {
                 - EVENT_TYPES_OFFSET as i64
                 - EventType::FORMAT_DESCRIPTION_EVENT as i64;
 
-            cursor.seek(SeekFrom::Current(skip));
+            cursor.seek(SeekFrom::Current(skip)).unwrap();
             checksum_type = ChecksumType::from_code(cursor.read_u8().unwrap());
         }
 
