@@ -4,7 +4,7 @@ use std::io::{Cursor, Write};
 use std::net::TcpStream;
 
 use crate::constants::PACKET_HEADER_SIZE;
-use crate::options::ReplicaOptions;
+use crate::replica_options::ReplicaOptions;
 
 pub struct PacketChannel {
     stream: TcpStream,
@@ -36,7 +36,7 @@ impl PacketChannel {
         let seq_num = header_buffer[3];
 
         let mut packet: Vec<u8> = vec![0; packet_size as usize];
-        self.stream.read_exact(&mut packet[..]).unwrap();
+        self.stream.read_exact(&mut packet).unwrap();
 
         (packet, seq_num)
     }

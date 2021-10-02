@@ -1,5 +1,5 @@
 use mysql_cdc::binlog_client::BinlogClient;
-use mysql_cdc::options::ReplicaOptions;
+use mysql_cdc::replica_options::ReplicaOptions;
 use mysql_cdc::ssl_mode::SslMode;
 
 fn main() {

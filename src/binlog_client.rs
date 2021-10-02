@@ -4,8 +4,8 @@ use crate::constants::{auth_plugin_names, capability_flags, UTF8_MB4_GENERAL_CI}
 use crate::events::binlog_event::BinlogEvent;
 use crate::events::event_header::EventHeader;
 use crate::events::event_parser::EventParser;
-use crate::options::ReplicaOptions;
 use crate::packet_channel::PacketChannel;
+use crate::replica_options::ReplicaOptions;
 use crate::responses::error_packet::ErrorPacket;
 use crate::responses::handshake_packet::HandshakePacket;
 use crate::responses::response_type::ResponseType;
