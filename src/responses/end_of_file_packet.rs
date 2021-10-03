@@ -10,7 +10,9 @@ pub struct EndOfFilePacket {
 }
 
 impl EndOfFilePacket {
-    pub fn parse(cursor: &mut Cursor<&[u8]>) -> Self {
+    pub fn parse(packet: &[u8]) -> Self {
+        let mut cursor = Cursor::new(packet);
+
         let warning_count = cursor.read_u16::<LittleEndian>().unwrap();
         let server_status = cursor.read_u16::<LittleEndian>().unwrap();
 

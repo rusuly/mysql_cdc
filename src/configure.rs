@@ -40,7 +40,7 @@ impl BinlogClient {
         panic_if_error(&packet, "Setting master heartbeat error.");
     }
 
-    pub fn set_master_binlog_checksum(&mut self, channel: &mut PacketChannel) {
+    pub fn set_master_binlog_checksum(&mut self, channel: &mut PacketChannel) -> ChecksumType {
         let command =
             QueryCommand::new("SET @master_binlog_checksum= @@global.binlog_checksum".to_string());
         channel.write_packet(&command.serialize(), 0);
@@ -53,7 +53,7 @@ impl BinlogClient {
 
         // When replication is started fake RotateEvent comes before FormatDescriptionEvent.
         // In order to deserialize the event we have to obtain checksum type length in advance.
-        self.parser.checksum_type = ChecksumType::from_name(&result_set[0].cells[0]);
+        ChecksumType::from_name(&result_set[0].cells[0])
     }
 
     fn read_result_set(&self, channel: &mut PacketChannel) -> Vec<ResultSetRowPacket> {

@@ -1,4 +1,5 @@
 use mysql_cdc::binlog_client::BinlogClient;
+use mysql_cdc::binlog_options::BinlogOptions;
 use mysql_cdc::replica_options::ReplicaOptions;
 use mysql_cdc::ssl_mode::SslMode;
 
@@ -8,6 +9,7 @@ fn main() {
         password: String::from("Qwertyu1"),
         blocking: true,
         ssl_mode: SslMode::DISABLED,
+        binlog: BinlogOptions::from_start(),
         ..Default::default()
     };
 
