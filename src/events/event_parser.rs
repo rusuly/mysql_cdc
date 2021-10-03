@@ -13,7 +13,7 @@ use std::io::Cursor;
 
 pub struct EventParser {
     /// Gets checksum algorithm type used in a binlog file.
-    checksum_type: ChecksumType,
+    pub checksum_type: ChecksumType,
 }
 
 impl EventParser {

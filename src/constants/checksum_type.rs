@@ -16,4 +16,12 @@ impl ChecksumType {
             _ => panic!("The master checksum type is not supported: {}", code),
         }
     }
+
+    pub fn from_name(name: &str) -> Self {
+        match name {
+            "NONE" => ChecksumType::NONE,
+            "CRC32" => ChecksumType::CRC32,
+            _ => panic!("The master checksum type is not supported: {}", name),
+        }
+    }
 }

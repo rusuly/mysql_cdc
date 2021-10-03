@@ -29,8 +29,12 @@ impl BinlogClient {
     }
 
     /// Replicates binlog events from the server
-    pub fn replicate(self) -> Self {
-        let (channel, provider) = self.connect();
+    pub fn replicate(mut self) -> Self {
+        let (mut channel, provider) = self.connect();
+        self.adjust_starting_position(&mut channel);
+        self.set_master_heartbeat(&mut channel);
+        self.set_master_binlog_checksum(&mut channel);
+
         self
     }
 }

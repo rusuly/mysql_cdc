@@ -1,3 +1,4 @@
+use crate::binlog_options::BinlogOptions;
 use crate::ssl_mode::SslMode;
 use std::time::Duration;
 
@@ -34,6 +35,10 @@ pub struct ReplicaOptions {
     /// Defines interval of keep alive messages that the master sends to the slave.
     /// Defaults to 30 seconds.
     pub heartbeat_interval: Duration,
+
+    /// Defines the binlog coordinates that replication should start from.
+    /// Defaults to BinlogOptions.FromEnd()
+    pub binlog: BinlogOptions,
 }
 
 impl Default for ReplicaOptions {
@@ -48,6 +53,7 @@ impl Default for ReplicaOptions {
             server_id: 65535,
             blocking: true,
             heartbeat_interval: Duration::from_secs(30),
+            binlog: BinlogOptions::from_end(),
         }
     }
 }
