@@ -1,3 +1,4 @@
+use crate::extensions::read_string;
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::{Cursor, Read, Seek, SeekFrom};
 
@@ -41,12 +42,7 @@ impl QueryEvent {
             .read_exact(&mut status_variables[0..status_variable_length as usize])
             .unwrap();
 
-        let mut database_name: Vec<u8> = vec![0; database_name_length as usize];
-        cursor
-            .read_exact(&mut database_name[0..database_name_length as usize])
-            .unwrap();
-
-        let database_name = String::from_utf8(database_name).unwrap();
+        let database_name = read_string(cursor, database_name_length as usize);
 
         cursor.seek(SeekFrom::Current(1)).unwrap();
 

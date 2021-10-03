@@ -41,7 +41,7 @@ impl SslRequestCommand {
         cursor.write_u8(self.client_collation).unwrap();
 
         // Fill reserved bytes
-        for _number in (0..23).rev() {
+        for _number in 0..23 {
             cursor.write_u8(0).unwrap();
         }
 

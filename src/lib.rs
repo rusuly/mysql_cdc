@@ -6,6 +6,7 @@ pub mod ssl_mode;
 pub mod starting_strategy;
 
 mod commands;
+mod connect;
 mod constants;
 mod extensions;
 mod packet_channel;

@@ -10,3 +10,6 @@ license = "MIT"
 
 [dependencies]
 byteorder = "1.4.3"
+sha-1 = "0.9.8"
+sha2 = "0.9.8"
+openssl = "0.10.36"

@@ -1,6 +1,6 @@
 pub mod ResponseType {
-    pub const Ok: u8 = 0x00;
-    pub const Error: u8 = 0xFF;
-    pub const EndOfFile: u8 = 0xFE;
-    pub const AuthPluginSwitch: u8 = 0xFE;
+    pub const OK: u8 = 0x00;
+    pub const ERROR: u8 = 0xFF;
+    pub const END_OF_FILE: u8 = 0xFE;
+    pub const AUTH_PLUGIN_SWITCH: u8 = 0xFE;
 }
