@@ -31,7 +31,7 @@ impl QueryEvent {
         let thread_id = cursor.read_u32::<LittleEndian>().unwrap();
         let duration = cursor.read_u32::<LittleEndian>().unwrap();
 
-        // DatabaseName length is null terminated
+        // DatabaseName length
         let database_name_length = cursor.read_u8().unwrap();
 
         let error_code = cursor.read_u16::<LittleEndian>().unwrap();
@@ -42,8 +42,8 @@ impl QueryEvent {
             .read_exact(&mut status_variables[0..status_variable_length as usize])
             .unwrap();
 
+        // DatabaseName is null terminated
         let database_name = read_string(cursor, database_name_length as usize);
-
         cursor.seek(SeekFrom::Current(1)).unwrap();
 
         let mut sql_statement = String::new();

@@ -4,6 +4,7 @@ use crate::events::intvar_event::IntVarEvent;
 use crate::events::query_event::QueryEvent;
 use crate::events::rotate_event::RotateEvent;
 use crate::events::rows_query_event::RowsQueryEvent;
+use crate::events::table_map_event::TableMapEvent;
 use crate::events::xid_event::XidEvent;
 
 /// Represents a binlog event.
@@ -13,6 +14,7 @@ pub enum BinlogEvent {
     XidEvent(XidEvent),
     IntVarEvent(IntVarEvent),
     QueryEvent(QueryEvent),
+    TableMapEvent(TableMapEvent),
     RotateEvent(RotateEvent),
     RowsQueryEvent(RowsQueryEvent),
     HeartbeatEvent(HeartbeatEvent),

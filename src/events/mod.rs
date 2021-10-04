@@ -8,4 +8,5 @@ pub mod intvar_event;
 pub mod query_event;
 pub mod rotate_event;
 pub mod rows_query_event;
+pub mod table_map_event;
 pub mod xid_event;

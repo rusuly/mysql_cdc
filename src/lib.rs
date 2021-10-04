@@ -2,6 +2,7 @@ pub mod binlog_client;
 pub mod binlog_options;
 pub mod binlog_reader;
 pub mod events;
+pub mod metadata;
 pub mod replica_options;
 pub mod ssl_mode;
 pub mod starting_strategy;

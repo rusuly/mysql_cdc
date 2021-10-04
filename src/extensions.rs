@@ -88,6 +88,23 @@ pub fn read_len_enc_num(cursor: &mut Cursor<&[u8]>) -> usize {
     panic!("Unexpected length-encoded integer: {}", first_byte);
 }
 
+/// Reads bitmap in little-endian bytes order
+pub fn read_bitmap_little_endian(cursor: &mut Cursor<&[u8]>, bits_number: usize) -> Vec<bool> {
+    let mut result = vec![false; bits_number];
+    let bytes_number = (bits_number + 7) / 8;
+    for i in 0..bytes_number {
+        let value = cursor.read_u8().unwrap();
+        for y in 0..8 {
+            let index = (i << 3) + y;
+            if index == bits_number {
+                break;
+            }
+            result[index] = (value & (1 << y)) > 0;
+        }
+    }
+    result
+}
+
 pub fn panic_if_error(packet: &[u8], message: &str) {
     if packet[0] == ResponseType::ERROR {
         let error = ErrorPacket::parse(&packet[1..]);

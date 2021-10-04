@@ -8,18 +8,24 @@ use crate::events::intvar_event::IntVarEvent;
 use crate::events::query_event::QueryEvent;
 use crate::events::rotate_event::RotateEvent;
 use crate::events::rows_query_event::RowsQueryEvent;
+use crate::events::table_map_event::TableMapEvent;
 use crate::events::xid_event::XidEvent;
+use std::collections::HashMap;
 use std::io::Cursor;
 
 pub struct EventParser {
     /// Gets checksum algorithm type used in a binlog file.
     pub checksum_type: ChecksumType,
+
+    /// Gets TableMapEvent cache required in row events.
+    table_map_cache: HashMap<u64, TableMapEvent>,
 }
 
 impl EventParser {
     pub fn new() -> Self {
         Self {
             checksum_type: ChecksumType::NONE,
+            table_map_cache: HashMap::new(),
         }
     }
 
@@ -34,7 +40,9 @@ impl EventParser {
             EventType::FORMAT_DESCRIPTION_EVENT => BinlogEvent::FormatDescriptionEvent(
                 FormatDescriptionEvent::parse(&mut cursor, &header),
             ),
-            /*EventType::TABLE_MAP_EVENT => TableMapEvent::parse(slice),*/
+            EventType::TABLE_MAP_EVENT => {
+                BinlogEvent::TableMapEvent(TableMapEvent::parse(&mut cursor))
+            }
             EventType::HEARTBEAT_EVENT => {
                 BinlogEvent::HeartbeatEvent(HeartbeatEvent::parse(&mut cursor))
             }
@@ -69,6 +77,10 @@ impl EventParser {
 
         if let BinlogEvent::FormatDescriptionEvent(x) = &binlog_event {
             self.checksum_type = x.checksum_type;
+        }
+
+        if let BinlogEvent::TableMapEvent(x) = &binlog_event {
+            self.table_map_cache.insert(x.table_id, x.clone()); //todo: optimize
         }
 
         binlog_event

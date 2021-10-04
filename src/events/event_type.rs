@@ -6,34 +6,31 @@ pub enum EventType {
     Unknown,
 
     /// Identifies <see cref="QueryEvent"/>.
-    QUERY_EVENT = 0x02,
+    QUERY_EVENT = 2,
 
     /// Identifies StopEvent.
-    STOP_EVENT = 0x03,
+    STOP_EVENT = 3,
 
     /// Identifies <see cref="RotateEvent"/>.
-    ROTATE_EVENT = 0x04,
-
-    /// Identifies <see cref="XidEvent"/>.
-    XID_EVENT = 0x10,
-
-    /// Identifies RandEvent.
-    RAND_EVENT = 0x0d,
-
-    /// Identifies UserVarEvent.
-    USER_VAR_EVENT = 0x0e,
-
-    /// Identifies <see cref="FormatDescriptionEvent"/>.
-    FORMAT_DESCRIPTION_EVENT = 0x0f,
-
-    /// Identifies <see cref="TableMapEvent"/>.
-    TABLE_MAP_EVENT = 0x13,
-
-    /// Identifies <see cref="HeartbeatEvent"/>.
-    HEARTBEAT_EVENT = 0x1b,
+    ROTATE_EVENT = 4,
 
     /// Identifies <see cref="IntVarEvent"/>.
-    INTVAR_EVENT = 0x05,
+    INTVAR_EVENT = 5,
+
+    /// Identifies RandEvent.
+    RAND_EVENT = 13,
+
+    /// Identifies UserVarEvent.
+    USER_VAR_EVENT = 14,
+
+    /// Identifies <see cref="FormatDescriptionEvent"/>.
+    FORMAT_DESCRIPTION_EVENT = 15,
+
+    /// Identifies <see cref="XidEvent"/>.
+    XID_EVENT = 16,
+
+    /// Identifies <see cref="TableMapEvent"/>.
+    TABLE_MAP_EVENT = 19,
 
     /// Row events
     /// Identifies <see cref="WriteRowsEvent"/> in MariaDB and MySQL from 5.1.15 to 5.6.
@@ -44,6 +41,9 @@ pub enum EventType {
 
     /// Identifies <see cref="DeleteRowsEvent"/> in MariaDB and MySQL from 5.1.15 to 5.6.
     DELETE_ROWS_EVENT_V1 = 25,
+
+    /// Identifies <see cref="HeartbeatEvent"/>.
+    HEARTBEAT_EVENT = 27,
 
     /// MySQL specific events
     /// Identifies <see cref="RowsQueryEvent"/> in MySQL from 5.6 to 8.0.
@@ -87,19 +87,19 @@ pub enum EventType {
 impl EventType {
     pub fn from_code(code: u8) -> Self {
         match code {
-            0x02 => EventType::QUERY_EVENT,
-            0x03 => EventType::STOP_EVENT,
-            0x04 => EventType::ROTATE_EVENT,
-            0x10 => EventType::XID_EVENT,
-            0x0d => EventType::RAND_EVENT,
-            0x0e => EventType::USER_VAR_EVENT,
-            0x0f => EventType::FORMAT_DESCRIPTION_EVENT,
-            0x13 => EventType::TABLE_MAP_EVENT,
-            0x1b => EventType::HEARTBEAT_EVENT,
-            0x05 => EventType::INTVAR_EVENT,
+            2 => EventType::QUERY_EVENT,
+            3 => EventType::STOP_EVENT,
+            4 => EventType::ROTATE_EVENT,
+            5 => EventType::INTVAR_EVENT,
+            13 => EventType::RAND_EVENT,
+            14 => EventType::USER_VAR_EVENT,
+            15 => EventType::FORMAT_DESCRIPTION_EVENT,
+            16 => EventType::XID_EVENT,
+            19 => EventType::TABLE_MAP_EVENT,
             23 => EventType::WRITE_ROWS_EVENT_V1,
             24 => EventType::UPDATE_ROWS_EVENT_V1,
             25 => EventType::DELETE_ROWS_EVENT_V1,
+            27 => EventType::HEARTBEAT_EVENT,
             29 => EventType::MYSQL_ROWS_QUERY_EVENT,
             30 => EventType::MYSQL_WRITE_ROWS_EVENT_V2,
             31 => EventType::MYSQL_UPDATE_ROWS_EVENT_V2,
