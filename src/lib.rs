@@ -12,7 +12,12 @@
 //!
 //! ## Binlog event stream replication
 //! Real-time replication client works the following way.
-//! ```rust
+//! ```no_run
+//! use mysql_cdc::binlog_client::BinlogClient;
+//! use mysql_cdc::binlog_options::BinlogOptions;
+//! use mysql_cdc::replica_options::ReplicaOptions;
+//! use mysql_cdc::ssl_mode::SslMode;
+//!
 //! let options = ReplicaOptions {
 //!     username: String::from("root"),
 //!     password: String::from("Qwertyu1"),
@@ -45,7 +50,10 @@
 //! ## Reading binlog files offline
 //! In some cases you will need to read binlog files offline from the file system.
 //! This can be done using `BinlogReader` class.
-//! ```rust
+//! ```no_run
+//! use std::fs::File;
+//! use mysql_cdc::binlog_reader::BinlogReader;
+//! 
 //! let file = File::open("mysql-bin.000001").unwrap();
 //! let reader = BinlogReader::new(file).unwrap();
 //!
