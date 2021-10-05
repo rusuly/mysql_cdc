@@ -1,6 +1,7 @@
 /// MySql column types.
 /// See <a href="https://mariadb.com/kb/en/library/resultset/#column-definition-packet">MariaDB docs</a>
 /// See <a href="https://dev.mysql.com/doc/internals/en/com-query-response.html#column-type">MySQL docs</a>
+#[derive(PartialEq, Debug)]
 pub enum ColumnType {
     /// DECIMAL
     DECIMAL = 0,

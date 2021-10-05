@@ -107,6 +107,23 @@ pub fn read_bitmap_little_endian(cursor: &mut Cursor<&[u8]>, bits_number: usize)
     result
 }
 
+/// Reads bitmap in big-endian bytes order
+pub fn read_bitmap_big_endian(cursor: &mut Cursor<&[u8]>, bits_number: usize) -> Vec<bool> {
+    let mut result = vec![false; bits_number];
+    let bytes_number = (bits_number + 7) / 8;
+    for i in 0..bytes_number {
+        let value = cursor.read_u8().unwrap();
+        for y in 0..8 {
+            let index = ((bytes_number - i - 1) << 3) + y;
+            if index >= bits_number {
+                continue;
+            }
+            result[index] = (value & (1 << y)) > 0;
+        }
+    }
+    result
+}
+
 pub fn panic_if_error(packet: &[u8], message: &str) {
     if packet[0] == ResponseType::ERROR {
         let error = ErrorPacket::parse(&packet[1..]);

@@ -7,6 +7,9 @@ use crate::events::heartbeat_event::HeartbeatEvent;
 use crate::events::intvar_event::IntVarEvent;
 use crate::events::query_event::QueryEvent;
 use crate::events::rotate_event::RotateEvent;
+use crate::events::row_events::delete_rows_event::DeleteRowsEvent;
+use crate::events::row_events::update_rows_event::UpdateRowsEvent;
+use crate::events::row_events::write_rows_event::WriteRowsEvent;
 use crate::events::rows_query_event::RowsQueryEvent;
 use crate::events::table_map_event::TableMapEvent;
 use crate::events::xid_event::XidEvent;
@@ -18,14 +21,14 @@ pub struct EventParser {
     pub checksum_type: ChecksumType,
 
     /// Gets TableMapEvent cache required in row events.
-    table_map_cache: HashMap<u64, TableMapEvent>,
+    table_map: HashMap<u64, TableMapEvent>,
 }
 
 impl EventParser {
     pub fn new() -> Self {
         Self {
             checksum_type: ChecksumType::NONE,
-            table_map_cache: HashMap::new(),
+            table_map: HashMap::new(),
         }
     }
 
@@ -47,24 +50,34 @@ impl EventParser {
                 BinlogEvent::HeartbeatEvent(HeartbeatEvent::parse(&mut cursor))
             }
             EventType::ROTATE_EVENT => BinlogEvent::RotateEvent(RotateEvent::parse(&mut cursor)),
-            //
             EventType::INTVAR_EVENT => BinlogEvent::IntVarEvent(IntVarEvent::parse(&mut cursor)),
             EventType::QUERY_EVENT => BinlogEvent::QueryEvent(QueryEvent::parse(&mut cursor)),
             EventType::XID_EVENT => BinlogEvent::XidEvent(XidEvent::parse(&mut cursor)),
             // Rows events used in MariaDB and MySQL from 5.1.15 to 5.6.
-            /*EventType::WRITE_ROWS_EVENT_V1 => WriteRowsEvent::parse(slice, &self.table_map, 1),
-            EventType::UPDATE_ROWS_EVENT_V1 => UpdateRowsEvent::parse(slice, &self.table_map, 1),
-            EventType::DELETE_ROWS_EVENT_V1 => DeleteRowsEvent::parse(slice, &self.table_map, 1),
-            // Rows events used only in MySQL from 5.6 to 8.0.
-            EventType::MYSQL_WRITE_ROWS_EVENT_V2 => WriteRowsEvent::parse(slice, &self.table_map, 2),
-            EventType::MYSQL_UPDATE_ROWS_EVENT_V2 => UpdateRowsEvent::parse(slice, &self.table_map, 2),
-            EventType::MYSQL_DELETE_ROWS_EVENT_V2 => DeleteRowsEvent::parse(slice, &self.table_map, 2),
-            // MySQL specific events
-            EventType::MYSQL_GTID_EVENT => GtidEvent::parse_mysql(slice),*/
+            EventType::WRITE_ROWS_EVENT_V1 => {
+                BinlogEvent::WriteRowsEvent(WriteRowsEvent::parse(&mut cursor, &self.table_map, 1))
+            }
+            EventType::UPDATE_ROWS_EVENT_V1 => BinlogEvent::UpdateRowsEvent(
+                UpdateRowsEvent::parse(&mut cursor, &self.table_map, 1),
+            ),
+            EventType::DELETE_ROWS_EVENT_V1 => BinlogEvent::DeleteRowsEvent(
+                DeleteRowsEvent::parse(&mut cursor, &self.table_map, 1),
+            ),
+            // MySQL specific events. Rows events used only in MySQL from 5.6 to 8.0.
+            EventType::MYSQL_WRITE_ROWS_EVENT_V2 => {
+                BinlogEvent::WriteRowsEvent(WriteRowsEvent::parse(&mut cursor, &self.table_map, 2))
+            }
+            EventType::MYSQL_UPDATE_ROWS_EVENT_V2 => BinlogEvent::UpdateRowsEvent(
+                UpdateRowsEvent::parse(&mut cursor, &self.table_map, 2),
+            ),
+            EventType::MYSQL_DELETE_ROWS_EVENT_V2 => BinlogEvent::DeleteRowsEvent(
+                DeleteRowsEvent::parse(&mut cursor, &self.table_map, 2),
+            ),
             EventType::MYSQL_ROWS_QUERY_EVENT => {
                 BinlogEvent::RowsQueryEvent(RowsQueryEvent::parse_mysql(&mut cursor))
             }
-            /*EventType::MYSQL_PREVIOUS_GTIDS_EVENT => PreviousGtidsEvent::parse(slice),
+            /*EventType::MYSQL_GTID_EVENT => GtidEvent::parse_mysql(slice),
+            EventType::MYSQL_PREVIOUS_GTIDS_EVENT => PreviousGtidsEvent::parse(slice),
             EventType::MYSQL_XA_PREPARE => XaPrepareEvent::parse(slice),
             // MariaDB specific events
             EventType::MARIADB_GTID_EVENT => GtidEvent::parse_mariadb(slice),
@@ -80,7 +93,7 @@ impl EventParser {
         }
 
         if let BinlogEvent::TableMapEvent(x) = &binlog_event {
-            self.table_map_cache.insert(x.table_id, x.clone()); //todo: optimize
+            self.table_map.insert(x.table_id, x.clone()); //todo: optimize
         }
 
         binlog_event

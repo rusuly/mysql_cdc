@@ -10,3 +10,5 @@ pub mod rotate_event;
 pub mod rows_query_event;
 pub mod table_map_event;
 pub mod xid_event;
+
+pub mod row_events;
