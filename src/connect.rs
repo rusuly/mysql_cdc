@@ -32,9 +32,9 @@ impl BinlogClient {
         mut seq_num: u8,
     ) {
         let mut use_ssl = false;
-        if self.options.ssl_mode != SslMode::DISABLED {
+        if self.options.ssl_mode != SslMode::Disabled {
             let ssl_available = (handshake.server_capabilities & capability_flags::SSL) != 0;
-            if !ssl_available && self.options.ssl_mode as u8 >= SslMode::REQUIRE as u8 {
+            if !ssl_available && self.options.ssl_mode as u8 >= SslMode::Require as u8 {
                 panic!("The server doesn't support SSL encryption");
             }
             if ssl_available {

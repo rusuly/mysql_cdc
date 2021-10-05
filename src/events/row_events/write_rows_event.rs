@@ -2,7 +2,6 @@ use crate::events::row_events::row_data::RowData;
 use crate::events::row_events::row_parser::{parse_head, parse_row_data_list};
 use crate::events::table_map_event::TableMapEvent;
 use crate::extensions::read_bitmap_little_endian;
-use byteorder::{LittleEndian, ReadBytesExt};
 use std::collections::HashMap;
 use std::io::Cursor;
 

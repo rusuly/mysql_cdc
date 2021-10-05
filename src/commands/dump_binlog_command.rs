@@ -25,7 +25,7 @@ impl DumpBinlogCommand {
         let mut vec = Vec::new();
         let mut cursor = Cursor::new(&mut vec);
 
-        cursor.write_u8(CommandType::BINLOG_DUMP as u8).unwrap();
+        cursor.write_u8(CommandType::BinlogDump as u8).unwrap();
         cursor
             .write_u32::<LittleEndian>(self.binlog_position)
             .unwrap();

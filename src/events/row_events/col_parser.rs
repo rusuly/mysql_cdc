@@ -1,7 +1,7 @@
 use crate::events::row_events::mysql_value::{Date, DateTime, Time};
 use crate::extensions::{read_bitmap_big_endian, read_string};
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt};
-use std::io::{Cursor, Read, Seek, SeekFrom};
+use std::io::{Cursor, Read};
 
 /// See <a href="https://dev.mysql.com/doc/internals/en/date-and-time-data-type-representation.html">Docs</a>
 
@@ -27,7 +27,7 @@ pub fn parse_decimal(cursor: &mut Cursor<&[u8]>, metadata: u16) -> String {
     // [1-3 bytes]  [4 bytes]      [4 bytes]        [4 bytes]      [4 bytes]      [1-3 bytes]
     // [Compressed] [Uncompressed] [Uncompressed] . [Uncompressed] [Uncompressed] [Compressed]
     let mut value = vec![0; length as usize];
-    cursor.read_exact(&mut value);
+    cursor.read_exact(&mut value).unwrap();
     let mut result = String::new();
 
     let negative = (value[0] & 0x80) == 0;
@@ -52,7 +52,7 @@ pub fn parse_decimal(cursor: &mut Cursor<&[u8]>, metadata: u16) -> String {
             result += &number.to_string();
         }
     }
-    for i in 0..uncompressed_integral {
+    for _i in 0..uncompressed_integral {
         let number = buffer.read_u32::<BigEndian>().unwrap();
         if started {
             result += &format!("{val:0prec$}", prec = 9, val = number)
@@ -71,7 +71,7 @@ pub fn parse_decimal(cursor: &mut Cursor<&[u8]>, metadata: u16) -> String {
     }
 
     size = COMPRESSED_BYTES[compressed_fractional as usize];
-    for i in 0..uncompressed_fractional {
+    for _i in 0..uncompressed_fractional {
         let value = buffer.read_u32::<BigEndian>().unwrap();
         result += &format!("{val:0prec$}", prec = 9, val = value)
     }
@@ -106,11 +106,11 @@ pub fn parse_blob(cursor: &mut Cursor<&[u8]>, metadata: u16) -> Vec<u8> {
     vec
 }
 
-pub fn parse_year(cursor: &mut Cursor<&[u8]>, metadata: u16) -> u16 {
+pub fn parse_year(cursor: &mut Cursor<&[u8]>, _metadata: u16) -> u16 {
     1900 + cursor.read_u8().unwrap() as u16
 }
 
-pub fn parse_date(cursor: &mut Cursor<&[u8]>, metadata: u16) -> Date {
+pub fn parse_date(cursor: &mut Cursor<&[u8]>, _metadata: u16) -> Date {
     let value = cursor.read_u24::<LittleEndian>().unwrap();
 
     // Bits 1-5 store the day. Bits 6-9 store the month. The remaining bits store the year.
@@ -125,7 +125,7 @@ pub fn parse_date(cursor: &mut Cursor<&[u8]>, metadata: u16) -> Date {
     }
 }
 
-pub fn parse_time(cursor: &mut Cursor<&[u8]>, metadata: u16) -> Time {
+pub fn parse_time(cursor: &mut Cursor<&[u8]>, _metadata: u16) -> Time {
     let mut value = (cursor.read_i24::<LittleEndian>().unwrap() << 8) >> 8;
 
     if value < 0 {
@@ -171,7 +171,7 @@ pub fn parse_time2(cursor: &mut Cursor<&[u8]>, metadata: u16) -> Time {
     }
 }
 
-pub fn parse_date_time(cursor: &mut Cursor<&[u8]>, metadata: u16) -> DateTime {
+pub fn parse_date_time(cursor: &mut Cursor<&[u8]>, _metadata: u16) -> DateTime {
     let mut value = cursor.read_u64::<LittleEndian>().unwrap();
     let second = value % 100;
     value = value / 100;
@@ -220,7 +220,7 @@ pub fn parse_date_time2(cursor: &mut Cursor<&[u8]>, metadata: u16) -> DateTime {
     }
 }
 
-pub fn parse_timestamp(cursor: &mut Cursor<&[u8]>, metadata: u16) -> u64 {
+pub fn parse_timestamp(cursor: &mut Cursor<&[u8]>, _metadata: u16) -> u64 {
     let seconds = cursor.read_u32::<LittleEndian>().unwrap() as u64;
     seconds * 1000
 }

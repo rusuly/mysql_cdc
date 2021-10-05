@@ -4,133 +4,133 @@
 #[derive(PartialEq, Debug)]
 pub enum ColumnType {
     /// DECIMAL
-    DECIMAL = 0,
+    Decimal = 0,
 
     /// TINY
-    TINY = 1,
+    Tiny = 1,
 
     /// SHORT
-    SHORT = 2,
+    Short = 2,
 
     /// LONG
-    LONG = 3,
+    Long = 3,
 
     /// FLOAT
-    FLOAT = 4,
+    Float = 4,
 
     /// DOUBLE
-    DOUBLE = 5,
+    Double = 5,
 
     /// NULL
-    NULL = 6,
+    Null = 6,
 
     /// TIMESTAMP
-    TIMESTAMP = 7,
+    TimeStamp = 7,
 
     /// LONGLONG
-    LONGLONG = 8,
+    LongLong = 8,
 
     /// INT24
-    INT24 = 9,
+    Int24 = 9,
 
     /// DATE
-    DATE = 10,
+    Date = 10,
 
     /// TIME
-    TIME = 11,
+    Time = 11,
 
     /// DATETIME
-    DATETIME = 12,
+    DateTime = 12,
 
     /// YEAR
-    YEAR = 13,
+    Year = 13,
 
     /// NEWDATE
-    NEWDATE = 14,
+    NewDate = 14,
 
     /// VARCHAR
-    VARCHAR = 15,
+    VarChar = 15,
 
     /// BIT
-    BIT = 16,
+    Bit = 16,
 
     /// TIMESTAMP2
-    TIMESTAMP2 = 17,
+    TimeStamp2 = 17,
 
     /// DATETIME2
-    DATETIME2 = 18,
+    DateTime2 = 18,
 
     /// TIME2
-    TIME2 = 19,
+    Time2 = 19,
 
     /// JSON is MySQL 5.7.8+ type. Not supported in MariaDB.
-    JSON = 245,
+    Json = 245,
 
     /// NEWDECIMAL
-    NEWDECIMAL = 246,
+    NewDecimal = 246,
 
     /// ENUM
-    ENUM = 247,
+    Enum = 247,
 
     /// SET
-    SET = 248,
+    Set = 248,
 
     /// TINY_BLOB
-    TINY_BLOB = 249,
+    TinyBlob = 249,
 
     /// MEDIUM_BLOB
-    MEDIUM_BLOB = 250,
+    MediumBlob = 250,
 
     /// LONG_BLOB
-    LONG_BLOB = 251,
+    LongBlob = 251,
 
     /// BLOB
-    BLOB = 252,
+    Blob = 252,
 
     /// VAR_STRING
-    VAR_STRING = 253,
+    VarString = 253,
 
     /// STRING
-    STRING = 254,
+    String = 254,
 
     /// GEOMETRY
-    GEOMETRY = 255,
+    Geometry = 255,
 }
 
 impl ColumnType {
     pub fn from_code(code: u8) -> Self {
         match code {
-            0 => ColumnType::DECIMAL,
-            1 => ColumnType::TINY,
-            2 => ColumnType::SHORT,
-            3 => ColumnType::LONG,
-            4 => ColumnType::FLOAT,
-            5 => ColumnType::DOUBLE,
-            6 => ColumnType::NULL,
-            7 => ColumnType::TIMESTAMP,
-            8 => ColumnType::LONGLONG,
-            9 => ColumnType::INT24,
-            10 => ColumnType::DATE,
-            11 => ColumnType::TIME,
-            12 => ColumnType::DATETIME,
-            13 => ColumnType::YEAR,
-            14 => ColumnType::NEWDATE,
-            15 => ColumnType::VARCHAR,
-            16 => ColumnType::BIT,
-            17 => ColumnType::TIMESTAMP2,
-            18 => ColumnType::DATETIME2,
-            19 => ColumnType::TIME2,
-            245 => ColumnType::JSON,
-            246 => ColumnType::NEWDECIMAL,
-            247 => ColumnType::ENUM,
-            248 => ColumnType::SET,
-            249 => ColumnType::TINY_BLOB,
-            250 => ColumnType::MEDIUM_BLOB,
-            251 => ColumnType::LONG_BLOB,
-            252 => ColumnType::BLOB,
-            253 => ColumnType::VAR_STRING,
-            254 => ColumnType::STRING,
-            255 => ColumnType::GEOMETRY,
+            0 => ColumnType::Decimal,
+            1 => ColumnType::Tiny,
+            2 => ColumnType::Short,
+            3 => ColumnType::Long,
+            4 => ColumnType::Float,
+            5 => ColumnType::Double,
+            6 => ColumnType::Null,
+            7 => ColumnType::TimeStamp,
+            8 => ColumnType::LongLong,
+            9 => ColumnType::Int24,
+            10 => ColumnType::Date,
+            11 => ColumnType::Time,
+            12 => ColumnType::DateTime,
+            13 => ColumnType::Year,
+            14 => ColumnType::NewDate,
+            15 => ColumnType::VarChar,
+            16 => ColumnType::Bit,
+            17 => ColumnType::TimeStamp2,
+            18 => ColumnType::DateTime2,
+            19 => ColumnType::Time2,
+            245 => ColumnType::Json,
+            246 => ColumnType::NewDecimal,
+            247 => ColumnType::Enum,
+            248 => ColumnType::Set,
+            249 => ColumnType::TinyBlob,
+            250 => ColumnType::MediumBlob,
+            251 => ColumnType::LongBlob,
+            252 => ColumnType::Blob,
+            253 => ColumnType::VarString,
+            254 => ColumnType::String,
+            255 => ColumnType::Geometry,
             _ => panic!("Unknown column type {}", code),
         }
     }

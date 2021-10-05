@@ -22,7 +22,7 @@
 //!     username: String::from("root"),
 //!     password: String::from("Qwertyu1"),
 //!     blocking: false,
-//!     ssl_mode: SslMode::DISABLED,
+//!     ssl_mode: SslMode::Disabled,
 //!     binlog: BinlogOptions::from_start(),
 //!     ..Default::default()
 //! };
@@ -53,7 +53,7 @@
 //! ```no_run
 //! use std::fs::File;
 //! use mysql_cdc::binlog_reader::BinlogReader;
-//! 
+//!
 //! let file = File::open("mysql-bin.000001").unwrap();
 //! let reader = BinlogReader::new(file).unwrap();
 //!

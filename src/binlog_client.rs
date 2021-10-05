@@ -18,13 +18,13 @@ pub struct BinlogClient {
 
 impl BinlogClient {
     pub fn new(options: ReplicaOptions) -> Self {
-        if options.ssl_mode == SslMode::REQUIRE_VERIFY_CA
-            || options.ssl_mode == SslMode::REQUIRE_VERIFY_FULL
+        if options.ssl_mode == SslMode::RequireVerifyCa
+            || options.ssl_mode == SslMode::RequireVerifyFull
         {
             unimplemented!(
                 "{:?} and {:?} ssl modes are not supported",
-                SslMode::REQUIRE_VERIFY_CA,
-                SslMode::REQUIRE_VERIFY_FULL
+                SslMode::RequireVerifyCa,
+                SslMode::RequireVerifyFull
             );
         }
 
@@ -33,7 +33,7 @@ impl BinlogClient {
 
     /// Replicates binlog events from the server
     pub fn replicate(mut self) -> BinlogEvents {
-        let (mut channel, provider) = self.connect();
+        let (mut channel, _provider) = self.connect();
         self.adjust_starting_position(&mut channel);
         self.set_master_heartbeat(&mut channel);
         let checksum = self.set_master_binlog_checksum(&mut channel);
@@ -42,7 +42,7 @@ impl BinlogClient {
         BinlogEvents::new(channel, checksum)
     }
 
-    pub fn dump_binlog(mut self, channel: &mut PacketChannel) {
+    pub fn dump_binlog(self, channel: &mut PacketChannel) {
         let server_id = if self.options.blocking {
             self.options.server_id
         } else {

@@ -28,7 +28,7 @@ pub fn parse_row_data_list(
 ) -> Vec<RowData> {
     let table = match table_map.get(&table_id) {
         Some(x) => x,
-        None => panic!(TABLE_MAP_NOT_FOUND),
+        None => panic!("{}", TABLE_MAP_NOT_FOUND),
     };
 
     let cells_included = get_bits_number(columns_present);
@@ -48,7 +48,7 @@ pub fn parse_update_row_data_list(
 ) -> Vec<UpdateRowData> {
     let table = match table_map.get(&table_id) {
         Some(x) => x,
-        None => panic!(TABLE_MAP_NOT_FOUND),
+        None => panic!("{}", TABLE_MAP_NOT_FOUND),
     };
 
     let cells_included_before_update = get_bits_number(columns_before_update);
@@ -111,7 +111,7 @@ pub fn parse_row(
         else {
             let mut column_type = table_map.column_types[i];
             let mut metadata = table_map.column_metadata[i];
-            if ColumnType::from_code(column_type) == ColumnType::STRING {
+            if ColumnType::from_code(column_type) == ColumnType::String {
                 get_actual_string_type(&mut column_type, &mut metadata);
             }
             row.push(Some(parse_cell(cursor, column_type, metadata)));
@@ -123,45 +123,45 @@ pub fn parse_row(
 fn parse_cell(cursor: &mut Cursor<&[u8]>, column_type: u8, metadata: u16) -> MySqlValue {
     match ColumnType::from_code(column_type) {
         /* Numeric types. The only place where numbers can be negative */
-        ColumnType::TINY => MySqlValue::TinyInt(cursor.read_u8().unwrap()),
-        ColumnType::SHORT => MySqlValue::SmallInt(cursor.read_u16::<LittleEndian>().unwrap()),
-        ColumnType::INT24 => MySqlValue::MediumInt(cursor.read_u24::<LittleEndian>().unwrap()),
-        ColumnType::LONG => MySqlValue::Int(cursor.read_u32::<LittleEndian>().unwrap()),
-        ColumnType::LONGLONG => MySqlValue::BigInt(cursor.read_u64::<LittleEndian>().unwrap()),
-        ColumnType::FLOAT => MySqlValue::Float(cursor.read_f32::<LittleEndian>().unwrap()),
-        ColumnType::DOUBLE => MySqlValue::Double(cursor.read_f64::<LittleEndian>().unwrap()),
-        ColumnType::NEWDECIMAL => MySqlValue::Decimal(parse_decimal(cursor, metadata)),
+        ColumnType::Tiny => MySqlValue::TinyInt(cursor.read_u8().unwrap()),
+        ColumnType::Short => MySqlValue::SmallInt(cursor.read_u16::<LittleEndian>().unwrap()),
+        ColumnType::Int24 => MySqlValue::MediumInt(cursor.read_u24::<LittleEndian>().unwrap()),
+        ColumnType::Long => MySqlValue::Int(cursor.read_u32::<LittleEndian>().unwrap()),
+        ColumnType::LongLong => MySqlValue::BigInt(cursor.read_u64::<LittleEndian>().unwrap()),
+        ColumnType::Float => MySqlValue::Float(cursor.read_f32::<LittleEndian>().unwrap()),
+        ColumnType::Double => MySqlValue::Double(cursor.read_f64::<LittleEndian>().unwrap()),
+        ColumnType::NewDecimal => MySqlValue::Decimal(parse_decimal(cursor, metadata)),
         /* String types, includes varchar, varbinary & fixed char, binary */
-        ColumnType::STRING => MySqlValue::String(parse_string(cursor, metadata)),
-        ColumnType::VARCHAR => MySqlValue::String(parse_string(cursor, metadata)),
-        ColumnType::VAR_STRING => MySqlValue::String(parse_string(cursor, metadata)),
+        ColumnType::String => MySqlValue::String(parse_string(cursor, metadata)),
+        ColumnType::VarChar => MySqlValue::String(parse_string(cursor, metadata)),
+        ColumnType::VarString => MySqlValue::String(parse_string(cursor, metadata)),
         /* BIT, ENUM, SET types */
-        ColumnType::BIT => MySqlValue::Bit(parse_bit(cursor, metadata)),
-        ColumnType::ENUM => {
+        ColumnType::Bit => MySqlValue::Bit(parse_bit(cursor, metadata)),
+        ColumnType::Enum => {
             MySqlValue::Enum(cursor.read_uint::<LittleEndian>(metadata as usize).unwrap() as u32)
         }
-        ColumnType::SET => {
+        ColumnType::Set => {
             MySqlValue::Set(cursor.read_uint::<LittleEndian>(metadata as usize).unwrap() as u64)
         }
         /* Blob types. MariaDB always creates BLOB for first three */
-        ColumnType::TINY_BLOB => MySqlValue::Blob(parse_blob(cursor, metadata)),
-        ColumnType::MEDIUM_BLOB => MySqlValue::Blob(parse_blob(cursor, metadata)),
-        ColumnType::LONG_BLOB => MySqlValue::Blob(parse_blob(cursor, metadata)),
-        ColumnType::BLOB => MySqlValue::Blob(parse_blob(cursor, metadata)),
+        ColumnType::TinyBlob => MySqlValue::Blob(parse_blob(cursor, metadata)),
+        ColumnType::MediumBlob => MySqlValue::Blob(parse_blob(cursor, metadata)),
+        ColumnType::LongBlob => MySqlValue::Blob(parse_blob(cursor, metadata)),
+        ColumnType::Blob => MySqlValue::Blob(parse_blob(cursor, metadata)),
         /* Date and time types */
-        ColumnType::YEAR => MySqlValue::Year(parse_year(cursor, metadata)),
-        ColumnType::DATE => MySqlValue::Date(parse_date(cursor, metadata)),
+        ColumnType::Year => MySqlValue::Year(parse_year(cursor, metadata)),
+        ColumnType::Date => MySqlValue::Date(parse_date(cursor, metadata)),
         // Older versions of MySQL.
-        ColumnType::TIME => MySqlValue::Time(parse_time(cursor, metadata)),
-        ColumnType::TIMESTAMP => MySqlValue::Timestamp(parse_timestamp(cursor, metadata)),
-        ColumnType::DATETIME => MySqlValue::DateTime(parse_date_time(cursor, metadata)),
+        ColumnType::Time => MySqlValue::Time(parse_time(cursor, metadata)),
+        ColumnType::TimeStamp => MySqlValue::Timestamp(parse_timestamp(cursor, metadata)),
+        ColumnType::DateTime => MySqlValue::DateTime(parse_date_time(cursor, metadata)),
         // MySQL 5.6.4+ types. Supported from MariaDB 10.1.2.
-        ColumnType::TIME2 => MySqlValue::Time(parse_time2(cursor, metadata)),
-        ColumnType::TIMESTAMP2 => MySqlValue::Timestamp(parse_timestamp2(cursor, metadata)),
-        ColumnType::DATETIME2 => MySqlValue::DateTime(parse_date_time2(cursor, metadata)),
+        ColumnType::Time2 => MySqlValue::Time(parse_time2(cursor, metadata)),
+        ColumnType::TimeStamp2 => MySqlValue::Timestamp(parse_timestamp2(cursor, metadata)),
+        ColumnType::DateTime2 => MySqlValue::DateTime(parse_date_time2(cursor, metadata)),
         /* MySQL-specific data types */
-        ColumnType::GEOMETRY => MySqlValue::Blob(parse_blob(cursor, metadata)),
-        ColumnType::JSON => MySqlValue::Blob(parse_blob(cursor, metadata)),
+        ColumnType::Geometry => MySqlValue::Blob(parse_blob(cursor, metadata)),
+        ColumnType::Json => MySqlValue::Blob(parse_blob(cursor, metadata)),
         _ => panic!(
             "Parsing column type {:?} is not supported",
             ColumnType::from_code(column_type)
@@ -192,7 +192,7 @@ fn get_actual_string_type(column_type: &mut u8, metadata: &mut u16) {
         *metadata = byte1 | (((byte0 as u16 & 0x30) ^ 0x30) << 4);
         *column_type = byte0 | 0x30;
     } else {
-        if byte0 == ColumnType::ENUM as u8 || byte0 == ColumnType::SET as u8 {
+        if byte0 == ColumnType::Enum as u8 || byte0 == ColumnType::Set as u8 {
             *column_type = byte0;
         }
         *metadata = byte1;

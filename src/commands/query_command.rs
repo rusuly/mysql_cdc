@@ -17,7 +17,7 @@ impl QueryCommand {
         let mut vec = Vec::new();
         let mut cursor = Cursor::new(&mut vec);
 
-        cursor.write_u8(CommandType::QUERY as u8).unwrap();
+        cursor.write_u8(CommandType::Query as u8).unwrap();
         cursor.write(self.sql.as_bytes()).unwrap();
 
         vec

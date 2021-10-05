@@ -43,16 +43,16 @@ impl FormatDescriptionEvent {
         // Get size of the event payload to determine beginning of the checksum part
         cursor
             .seek(SeekFrom::Current(
-                EventType::FORMAT_DESCRIPTION_EVENT as i64 - 1,
+                EventType::FormatDescriptionEvent as i64 - 1,
             ))
             .unwrap();
         let payload_length = cursor.read_u8().unwrap();
 
-        let mut checksum_type = ChecksumType::NONE;
+        let mut checksum_type = ChecksumType::None;
         if payload_length != header.event_length as u8 - constants::EVENT_HEADER_SIZE as u8 {
             let skip = payload_length as i64
                 - EVENT_TYPES_OFFSET as i64
-                - EventType::FORMAT_DESCRIPTION_EVENT as i64;
+                - EventType::FormatDescriptionEvent as i64;
 
             cursor.seek(SeekFrom::Current(skip)).unwrap();
             checksum_type = ChecksumType::from_code(cursor.read_u8().unwrap());

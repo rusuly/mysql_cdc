@@ -1,7 +1,5 @@
 use crate::constants::column_type::ColumnType;
-use crate::extensions::{
-    read_bitmap_little_endian, read_len_enc_num, read_null_term_string, read_string,
-};
+use crate::extensions::{read_bitmap_little_endian, read_len_enc_num, read_string};
 use crate::metadata::table_metadata::TableMetadata;
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt};
 use std::io::{Cursor, Read, Seek, SeekFrom};
@@ -54,7 +52,7 @@ impl TableMapEvent {
         let mut column_types = vec![0u8; columns_number];
         cursor.read_exact(&mut column_types).unwrap();
 
-        let metadata_length = read_len_enc_num(cursor);
+        let _metadata_length = read_len_enc_num(cursor);
         let column_metadata = TableMapEvent::parse_metadata(cursor, &column_types);
 
         let null_bitmap = read_bitmap_little_endian(cursor, columns_number);
@@ -84,26 +82,26 @@ impl TableMapEvent {
             let column_type = ColumnType::from_code(column_types[i]);
             metadata[i] = match column_type {
                 // 1 byte metadata
-                ColumnType::GEOMETRY => cursor.read_u8().unwrap() as u16,
-                ColumnType::JSON => cursor.read_u8().unwrap() as u16,
-                ColumnType::TINY_BLOB => cursor.read_u8().unwrap() as u16,
-                ColumnType::MEDIUM_BLOB => cursor.read_u8().unwrap() as u16,
-                ColumnType::LONG_BLOB => cursor.read_u8().unwrap() as u16,
-                ColumnType::BLOB => cursor.read_u8().unwrap() as u16,
-                ColumnType::FLOAT => cursor.read_u8().unwrap() as u16,
-                ColumnType::DOUBLE => cursor.read_u8().unwrap() as u16,
-                ColumnType::TIMESTAMP2 => cursor.read_u8().unwrap() as u16,
-                ColumnType::DATETIME2 => cursor.read_u8().unwrap() as u16,
-                ColumnType::TIME2 => cursor.read_u8().unwrap() as u16,
+                ColumnType::Geometry => cursor.read_u8().unwrap() as u16,
+                ColumnType::Json => cursor.read_u8().unwrap() as u16,
+                ColumnType::TinyBlob => cursor.read_u8().unwrap() as u16,
+                ColumnType::MediumBlob => cursor.read_u8().unwrap() as u16,
+                ColumnType::LongBlob => cursor.read_u8().unwrap() as u16,
+                ColumnType::Blob => cursor.read_u8().unwrap() as u16,
+                ColumnType::Float => cursor.read_u8().unwrap() as u16,
+                ColumnType::Double => cursor.read_u8().unwrap() as u16,
+                ColumnType::TimeStamp2 => cursor.read_u8().unwrap() as u16,
+                ColumnType::DateTime2 => cursor.read_u8().unwrap() as u16,
+                ColumnType::Time2 => cursor.read_u8().unwrap() as u16,
                 // 2 bytes little endian
-                ColumnType::BIT => cursor.read_u16::<LittleEndian>().unwrap(),
-                ColumnType::VARCHAR => cursor.read_u16::<LittleEndian>().unwrap(),
-                ColumnType::VAR_STRING => cursor.read_u16::<LittleEndian>().unwrap(),
-                ColumnType::NEWDECIMAL => cursor.read_u16::<LittleEndian>().unwrap(),
+                ColumnType::Bit => cursor.read_u16::<LittleEndian>().unwrap(),
+                ColumnType::VarChar => cursor.read_u16::<LittleEndian>().unwrap(),
+                ColumnType::VarString => cursor.read_u16::<LittleEndian>().unwrap(),
+                ColumnType::NewDecimal => cursor.read_u16::<LittleEndian>().unwrap(),
                 // 2 bytes big endian
-                ColumnType::ENUM => cursor.read_u16::<BigEndian>().unwrap(),
-                ColumnType::SET => cursor.read_u16::<BigEndian>().unwrap(),
-                ColumnType::STRING => cursor.read_u16::<BigEndian>().unwrap(),
+                ColumnType::Enum => cursor.read_u16::<BigEndian>().unwrap(),
+                ColumnType::Set => cursor.read_u16::<BigEndian>().unwrap(),
+                ColumnType::String => cursor.read_u16::<BigEndian>().unwrap(),
                 _ => 0,
             }
         }

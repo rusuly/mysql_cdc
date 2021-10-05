@@ -18,7 +18,7 @@ impl RegisterSlaveCommand {
         let mut vec = Vec::new();
         let mut cursor = Cursor::new(&mut vec);
 
-        cursor.write_u8(CommandType::REGISTER_SLAVE as u8).unwrap();
+        cursor.write_u8(CommandType::RegisterSlave as u8).unwrap();
         cursor.write_u32::<LittleEndian>(self.server_id).unwrap();
 
         //Empty host, user, password, port, rank, masterid

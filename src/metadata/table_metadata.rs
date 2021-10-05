@@ -2,7 +2,7 @@ use crate::constants::column_type::ColumnType;
 use crate::extensions::{read_len_enc_num, read_len_enc_str};
 use crate::metadata::default_charset::DefaultCharset;
 use crate::metadata::metadata_type::MetadataType;
-use byteorder::{LittleEndian, ReadBytesExt};
+use byteorder::ReadBytesExt;
 use std::io::{Cursor, Read};
 
 /// Contains metadata for table columns.
@@ -70,41 +70,41 @@ impl TableMetadata {
 
             let mut buffer = Cursor::new(metadata.as_slice());
             match metadata_type {
-                MetadataType::SIGNEDNESS => {
+                MetadataType::Signedness => {
                     let count = get_numeric_column_count(column_types);
                     signedness = Some(read_bitmap_reverted(&mut buffer, count));
                 }
-                MetadataType::DEFAULT_CHARSET => {
+                MetadataType::DefaultCharset => {
                     default_charset = Some(parse_default_charser(&mut buffer));
                 }
-                MetadataType::COLUMN_CHARSET => {
+                MetadataType::ColumnCharset => {
                     column_charsets = Some(parse_int_array(&mut buffer));
                 }
-                MetadataType::COLUMN_NAME => {
+                MetadataType::ColumnName => {
                     column_names = Some(parse_string_array(&mut buffer));
                 }
-                MetadataType::SET_STR_VALUE => {
+                MetadataType::SetStrValue => {
                     set_string_values = Some(parse_type_values(&mut buffer));
                 }
-                MetadataType::ENUM_STR_VALUE => {
+                MetadataType::EnumStrValue => {
                     enum_string_values = Some(parse_type_values(&mut buffer));
                 }
-                MetadataType::GEOMETRY_TYPE => {
+                MetadataType::GeometryType => {
                     geometry_types = Some(parse_int_array(&mut buffer));
                 }
-                MetadataType::SIMPLE_PRIMARY_KEY => {
+                MetadataType::SimplePrimaryKey => {
                     simple_primary_keys = Some(parse_int_array(&mut buffer));
                 }
-                MetadataType::PRIMARY_KEY_WITH_PREFIX => {
+                MetadataType::PrimaryKeyWithPrefix => {
                     primary_keys_with_prefix = Some(parse_int_map(&mut buffer));
                 }
-                MetadataType::ENUM_AND_SET_DEFAULT_CHARSET => {
+                MetadataType::EnumAndSetDefaultCharset => {
                     enum_and_set_default_charset = Some(parse_default_charser(&mut buffer));
                 }
-                MetadataType::ENUM_AND_SET_COLUMN_CHARSET => {
+                MetadataType::EnumAndSetColumnCharset => {
                     enum_and_set_column_charsets = Some(parse_int_array(&mut buffer));
                 }
-                MetadataType::COLUMN_VISIBILITY => {
+                MetadataType::ColumnVisibility => {
                     column_visibility = Some(read_bitmap_reverted(&mut buffer, column_types.len()));
                 }
             }
@@ -160,7 +160,7 @@ fn parse_type_values(cursor: &mut Cursor<&[u8]>) -> Vec<Vec<String>> {
     while cursor.position() < cursor.get_ref().len() as u64 {
         let length = read_len_enc_num(cursor);
         let mut type_values = Vec::new();
-        for i in 0..length {
+        for _i in 0..length {
             type_values.push(read_len_enc_str(cursor));
         }
         result.push(type_values);
@@ -196,14 +196,14 @@ fn get_numeric_column_count(column_types: &[u8]) -> usize {
     let mut count = 0;
     for i in 0..column_types.len() {
         match ColumnType::from_code(column_types[i]) {
-            ColumnType::TINY => count += 1,
-            ColumnType::SHORT => count += 1,
-            ColumnType::INT24 => count += 1,
-            ColumnType::LONG => count += 1,
-            ColumnType::LONGLONG => count += 1,
-            ColumnType::FLOAT => count += 1,
-            ColumnType::DOUBLE => count += 1,
-            ColumnType::NEWDECIMAL => count += 1,
+            ColumnType::Tiny => count += 1,
+            ColumnType::Short => count += 1,
+            ColumnType::Int24 => count += 1,
+            ColumnType::Long => count += 1,
+            ColumnType::LongLong => count += 1,
+            ColumnType::Float => count += 1,
+            ColumnType::Double => count += 1,
+            ColumnType::NewDecimal => count += 1,
             _ => (),
         }
     }

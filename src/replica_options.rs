@@ -46,7 +46,7 @@ impl Default for ReplicaOptions {
         ReplicaOptions {
             port: 3306,
             hostname: String::from("localhost"),
-            ssl_mode: SslMode::DISABLED,
+            ssl_mode: SslMode::Disabled,
             username: String::new(),
             password: String::new(),
             database: None,

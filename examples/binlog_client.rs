@@ -8,7 +8,7 @@ fn main() {
         username: String::from("root"),
         password: String::from("Qwertyu1"),
         blocking: true,
-        ssl_mode: SslMode::DISABLED,
+        ssl_mode: SslMode::Disabled,
         binlog: BinlogOptions::from_start(),
         ..Default::default()
     };
