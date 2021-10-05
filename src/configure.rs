@@ -68,7 +68,7 @@ impl BinlogClient {
             }
         }
 
-        let mut result_set = vec![];
+        let mut result_set = Vec::new();
         loop {
             let (packet, _) = channel.read_packet();
             panic_if_error(&packet, "Query result set error.");

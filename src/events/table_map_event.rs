@@ -95,7 +95,7 @@ impl TableMapEvent {
                 ColumnType::TIMESTAMP2 => cursor.read_u8().unwrap() as u16,
                 ColumnType::DATETIME2 => cursor.read_u8().unwrap() as u16,
                 ColumnType::TIME2 => cursor.read_u8().unwrap() as u16,
-                // 2 byte little endian
+                // 2 bytes little endian
                 ColumnType::BIT => cursor.read_u16::<LittleEndian>().unwrap(),
                 ColumnType::VARCHAR => cursor.read_u16::<LittleEndian>().unwrap(),
                 ColumnType::VAR_STRING => cursor.read_u16::<LittleEndian>().unwrap(),

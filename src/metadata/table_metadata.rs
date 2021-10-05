@@ -171,7 +171,7 @@ fn parse_type_values(cursor: &mut Cursor<&[u8]>) -> Vec<Vec<String>> {
 fn parse_default_charser(cursor: &mut Cursor<&[u8]>) -> DefaultCharset {
     let default_collation = read_len_enc_num(cursor);
     let charset_collations = parse_int_map(cursor);
-    return DefaultCharset::new(default_collation as u32, charset_collations);
+    DefaultCharset::new(default_collation as u32, charset_collations)
 }
 
 fn read_bitmap_reverted(cursor: &mut Cursor<&[u8]>, bits_number: usize) -> Vec<bool> {

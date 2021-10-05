@@ -14,13 +14,14 @@ pub fn encrypt_password(
     if auth_plugin_name == auth_plugin_names::MY_SQL_NATIVE_PASSWORD {
         let password_hash = sha1(password.as_bytes());
         let concat_hash = [scramble.as_bytes().to_vec(), sha1(&password_hash)].concat();
-        return xor(&password_hash, &sha1(&concat_hash));
+        xor(&password_hash, &sha1(&concat_hash))
     } else if auth_plugin_name == auth_plugin_names::CACHING_SHA2_PASSWORD {
         let password_hash = sha256(password.as_bytes());
         let concat_hash = [scramble.as_bytes().to_vec(), sha256(&password_hash)].concat();
-        return xor(&password_hash, &sha256(&concat_hash));
+        xor(&password_hash, &sha256(&concat_hash))
+    } else {
+        unimplemented!()
     }
-    unimplemented!()
 }
 
 pub fn sha1(value: &[u8]) -> Vec<u8> {
@@ -75,17 +76,18 @@ pub fn read_len_enc_num(cursor: &mut Cursor<&[u8]>) -> usize {
     let first_byte = cursor.read_u8().unwrap();
 
     if first_byte < 0xFB {
-        return first_byte as usize;
+        first_byte as usize
     } else if first_byte == 0xFB {
-        panic!("Length encoded integer cannot be NULL.");
+        panic!("Length encoded integer cannot be NULL.")
     } else if first_byte == 0xFC {
-        return cursor.read_u16::<LittleEndian>().unwrap() as usize;
+        cursor.read_u16::<LittleEndian>().unwrap() as usize
     } else if first_byte == 0xFD {
-        return cursor.read_u24::<LittleEndian>().unwrap() as usize;
+        cursor.read_u24::<LittleEndian>().unwrap() as usize
     } else if first_byte == 0xFE {
-        return cursor.read_u64::<LittleEndian>().unwrap() as usize;
+        cursor.read_u64::<LittleEndian>().unwrap() as usize
+    } else {
+        panic!("Unexpected length-encoded integer: {}", first_byte)
     }
-    panic!("Unexpected length-encoded integer: {}", first_byte);
 }
 
 /// Reads bitmap in little-endian bytes order
