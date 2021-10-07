@@ -1,10 +1,8 @@
 //! # mysql_cdc
 //! MySQL/MariaDB binlog replication client for Rust
 //!
-//! This library is a port of my C# project. For the complete documentation refer to its page [MySqlCdc](https://github.com/rusuly/MySqlCdc)
-//!
 //! ## Limitations
-//! Please note the lib is **WIP** and currently has the following limitations:
+//! Please note the lib currently has the following limitations:
 //! - Supports only standard auth plugins `mysql_native_password` and `caching_sha2_password`.
 //! - **Currently, the library doesn't support SSL encryption.**
 //! - **GTID replication is work in progress.**
@@ -78,4 +76,5 @@ mod connect;
 mod constants;
 mod extensions;
 mod packet_channel;
+mod providers;
 mod responses;

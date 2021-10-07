@@ -171,7 +171,7 @@ fn parse_cell(cursor: &mut Cursor<&[u8]>, column_type: u8, metadata: u16) -> MyS
 
 /// Gets number of bits set in a bitmap.
 fn get_bits_number(bitmap: &Vec<bool>) -> usize {
-    bitmap.iter().map(|x| if *x == true { 1 } else { 0 }).sum()
+    bitmap.iter().filter(|&x| *x == true).count()
 }
 
 /// Parses actual string type

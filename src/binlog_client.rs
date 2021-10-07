@@ -1,10 +1,12 @@
-use crate::commands::dump_binlog_command::DumpBinlogCommand;
 use crate::constants::checksum_type::ChecksumType;
+use crate::constants::database_provider::DatabaseProvider;
 use crate::constants::EVENT_HEADER_SIZE;
 use crate::events::binlog_event::BinlogEvent;
 use crate::events::event_header::EventHeader;
 use crate::events::event_parser::EventParser;
 use crate::packet_channel::PacketChannel;
+use crate::providers::mariadb::mariadb_provider::replicate_mariadb;
+use crate::providers::mysql::mysql_provider::replicate_mysql;
 use crate::replica_options::ReplicaOptions;
 use crate::responses::end_of_file_packet::EndOfFilePacket;
 use crate::responses::error_packet::ErrorPacket;
@@ -33,27 +35,24 @@ impl BinlogClient {
 
     /// Replicates binlog events from the server
     pub fn replicate(mut self) -> BinlogEvents {
-        let (mut channel, _provider) = self.connect();
+        let (mut channel, provider) = self.connect();
+
         self.adjust_starting_position(&mut channel);
         self.set_master_heartbeat(&mut channel);
         let checksum = self.set_master_binlog_checksum(&mut channel);
 
-        self.dump_binlog(&mut channel);
-        BinlogEvents::new(channel, checksum)
-    }
-
-    pub fn dump_binlog(self, channel: &mut PacketChannel) {
         let server_id = if self.options.blocking {
             self.options.server_id
         } else {
             0
         };
-        let command = DumpBinlogCommand::new(
-            server_id,
-            self.options.binlog.filename.clone(),
-            self.options.binlog.position,
-        );
-        channel.write_packet(&command.serialize(), 0)
+
+        match provider {
+            DatabaseProvider::MariaDB => replicate_mariadb(&mut channel, &self.options, server_id),
+            DatabaseProvider::MySQL => replicate_mysql(&mut channel, &self.options, server_id),
+        }
+
+        BinlogEvents::new(channel, checksum)
     }
 }
 
