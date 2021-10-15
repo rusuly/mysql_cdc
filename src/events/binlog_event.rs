@@ -9,6 +9,10 @@ use crate::events::row_events::write_rows_event::WriteRowsEvent;
 use crate::events::rows_query_event::RowsQueryEvent;
 use crate::events::table_map_event::TableMapEvent;
 use crate::events::xid_event::XidEvent;
+use crate::providers::mariadb::events::gtid_event::GtidEvent as MariaDbGtidEvent;
+use crate::providers::mariadb::events::gtid_list_event::GtidListEvent;
+use crate::providers::mysql::events::gtid_event::GtidEvent as MySqlGtidEvent;
+use crate::providers::mysql::events::prev_gtids_event::PreviousGtidsEvent;
 
 /// Represents a binlog event.
 #[derive(Debug)]
@@ -25,4 +29,9 @@ pub enum BinlogEvent {
     RowsQueryEvent(RowsQueryEvent),
     HeartbeatEvent(HeartbeatEvent),
     FormatDescriptionEvent(FormatDescriptionEvent),
+    // Provider specific events
+    MySqlGtidEvent(MySqlGtidEvent),
+    MySqlPrevGtidsEvent(PreviousGtidsEvent),
+    MariaDbGtidEvent(MariaDbGtidEvent),
+    MariaDbGtidListEvent(GtidListEvent),
 }

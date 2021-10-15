@@ -13,6 +13,10 @@ use crate::events::row_events::write_rows_event::WriteRowsEvent;
 use crate::events::rows_query_event::RowsQueryEvent;
 use crate::events::table_map_event::TableMapEvent;
 use crate::events::xid_event::XidEvent;
+use crate::providers::mariadb::events::gtid_event::GtidEvent as MariaDbGtidEvent;
+use crate::providers::mariadb::events::gtid_list_event::GtidListEvent;
+use crate::providers::mysql::events::gtid_event::GtidEvent as MySqlGtidEvent;
+use crate::providers::mysql::events::prev_gtids_event::PreviousGtidsEvent;
 use std::collections::HashMap;
 use std::io::Cursor;
 
@@ -79,12 +83,19 @@ impl EventParser {
                 EventType::MySqlRowsQueryEvent => {
                     BinlogEvent::RowsQueryEvent(RowsQueryEvent::parse_mysql(&mut cursor))
                 }
-                /*EventType::MySqlGtidEvent => GtidEvent::parse_mysql(slice),
-                EventType::MySqlPreviousGtidsEvent => PreviousGtidsEvent::parse(slice),
-                EventType::MySqlXaPrepare => XaPrepareEvent::parse(slice),
+                EventType::MySqlGtidEvent => {
+                    BinlogEvent::MySqlGtidEvent(MySqlGtidEvent::parse(&mut cursor))
+                }
+                EventType::MySqlPreviousGtidsEvent => {
+                    BinlogEvent::MySqlPrevGtidsEvent(PreviousGtidsEvent::parse(&mut cursor))
+                }
                 // MariaDB specific events
-                EventType::MariaDbGtidEvent => GtidEvent::parse_mariadb(slice),
-                EventType::MariaDbGtidListEvent => GtidListEvent::parse(slice),*/
+                EventType::MariaDbGtidEvent => {
+                    BinlogEvent::MariaDbGtidEvent(MariaDbGtidEvent::parse(&mut cursor, &header))
+                }
+                EventType::MariaDbGtidListEvent => {
+                    BinlogEvent::MariaDbGtidListEvent(GtidListEvent::parse(&mut cursor))
+                }
                 EventType::MariaDbAnnotateRowsEvent => {
                     BinlogEvent::RowsQueryEvent(RowsQueryEvent::parse_mariadb(&mut cursor))
                 }

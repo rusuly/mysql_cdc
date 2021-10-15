@@ -13,9 +13,11 @@ pub fn replicate_mariadb(channel: &mut PacketChannel, options: &ReplicaOptions, 
     panic_if_error(&packet, "Setting @mariadb_slave_capability error.");
 
     if options.binlog.starting_strategy == StartingStrategy::FromGtid {
-        unimplemented!("Get GtidList");
-        let gtid_list = String::new();
-        register_gtid_slave(channel, options.server_id, &gtid_list);
+        if let Some(gtid_list) = &options.binlog.gtid_list {
+            register_gtid_slave(channel, options.server_id, &gtid_list.to_string());
+        } else {
+            panic!("GtidList was not specified");
+        }
     }
 
     let command = DumpBinlogCommand::new(

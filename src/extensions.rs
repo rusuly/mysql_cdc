@@ -47,7 +47,7 @@ pub fn xor(slice1: &[u8], slice2: &[u8]) -> Vec<u8> {
 pub fn read_null_term_string(cursor: &mut Cursor<&[u8]>) -> String {
     let mut vec = Vec::new();
     cursor.read_until(NULL_TERMINATOR, &mut vec).unwrap();
-    vec.pop(); //todo: figure out a better approach
+    vec.pop();
     String::from_utf8(vec).unwrap()
 }
 
