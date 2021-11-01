@@ -1,6 +1,6 @@
 use crate::commands::command_type::CommandType;
 use byteorder::WriteBytesExt;
-use std::io::{Cursor, Write};
+use std::io::{self, Cursor, Write};
 
 /// COM_QUERY sends the server an SQL statement to be executed immediately.
 /// <a href="https://mariadb.com/kb/en/library/com_query/">See more</a>
@@ -13,13 +13,13 @@ impl QueryCommand {
         Self { sql }
     }
 
-    pub fn serialize(&self) -> Vec<u8> {
+    pub fn serialize(&self) -> Result<Vec<u8>, io::Error> {
         let mut vec = Vec::new();
         let mut cursor = Cursor::new(&mut vec);
 
-        cursor.write_u8(CommandType::Query as u8).unwrap();
-        cursor.write(self.sql.as_bytes()).unwrap();
+        cursor.write_u8(CommandType::Query as u8)?;
+        cursor.write(self.sql.as_bytes())?;
 
-        vec
+        Ok(vec)
     }
 }

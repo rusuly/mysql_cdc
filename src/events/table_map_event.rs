@@ -1,4 +1,5 @@
 use crate::constants::column_type::ColumnType;
+use crate::errors::Error;
 use crate::extensions::{read_bitmap_little_endian, read_len_enc_num, read_string};
 use crate::metadata::table_metadata::TableMetadata;
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt};
@@ -32,38 +33,38 @@ pub struct TableMapEvent {
 
 impl TableMapEvent {
     /// Supports all versions of MariaDB and MySQL 5.0+.
-    pub fn parse(cursor: &mut Cursor<&[u8]>) -> Self {
-        let table_id = cursor.read_u48::<LittleEndian>().unwrap();
+    pub fn parse(cursor: &mut Cursor<&[u8]>) -> Result<Self, Error> {
+        let table_id = cursor.read_u48::<LittleEndian>()?;
 
         // Reserved bytes
-        cursor.seek(SeekFrom::Current(2)).unwrap();
+        cursor.seek(SeekFrom::Current(2))?;
 
         // Database name is null terminated
-        let database_name_length = cursor.read_u8().unwrap();
-        let database_name = read_string(cursor, database_name_length as usize);
-        cursor.seek(SeekFrom::Current(1)).unwrap();
+        let database_name_length = cursor.read_u8()?;
+        let database_name = read_string(cursor, database_name_length as usize)?;
+        cursor.seek(SeekFrom::Current(1))?;
 
         // Table name is null terminated
-        let table_name_length = cursor.read_u8().unwrap();
-        let table_name = read_string(cursor, table_name_length as usize);
-        cursor.seek(SeekFrom::Current(1)).unwrap();
+        let table_name_length = cursor.read_u8()?;
+        let table_name = read_string(cursor, table_name_length as usize)?;
+        cursor.seek(SeekFrom::Current(1))?;
 
-        let columns_number = read_len_enc_num(cursor);
+        let columns_number = read_len_enc_num(cursor)?;
         let mut column_types = vec![0u8; columns_number];
-        cursor.read_exact(&mut column_types).unwrap();
+        cursor.read_exact(&mut column_types)?;
 
-        let _metadata_length = read_len_enc_num(cursor);
-        let column_metadata = TableMapEvent::parse_metadata(cursor, &column_types);
+        let _metadata_length = read_len_enc_num(cursor)?;
+        let column_metadata = TableMapEvent::parse_metadata(cursor, &column_types)?;
 
-        let null_bitmap = read_bitmap_little_endian(cursor, columns_number);
+        let null_bitmap = read_bitmap_little_endian(cursor, columns_number)?;
 
         let mut table_metadata = None;
         if cursor.position() < cursor.get_ref().len() as u64 {
             // Table metadata is supported in MySQL 5.6+ and MariaDB 10.5+.
-            table_metadata = Some(TableMetadata::parse(cursor, &column_types));
+            table_metadata = Some(TableMetadata::parse(cursor, &column_types)?);
         }
 
-        Self {
+        Ok(Self {
             table_id,
             database_name,
             table_name,
@@ -71,40 +72,43 @@ impl TableMapEvent {
             column_metadata,
             null_bitmap,
             table_metadata,
-        }
+        })
     }
 
-    fn parse_metadata(cursor: &mut Cursor<&[u8]>, column_types: &Vec<u8>) -> Vec<u16> {
+    fn parse_metadata(
+        cursor: &mut Cursor<&[u8]>,
+        column_types: &Vec<u8>,
+    ) -> Result<Vec<u16>, Error> {
         let mut metadata = vec![0u16; column_types.len()];
 
         // See https://mariadb.com/kb/en/library/rows_event_v1/#column-data-formats
         for i in 0..column_types.len() {
-            let column_type = ColumnType::from_code(column_types[i]);
+            let column_type = ColumnType::from_code(column_types[i])?;
             metadata[i] = match column_type {
                 // 1 byte metadata
-                ColumnType::Geometry => cursor.read_u8().unwrap() as u16,
-                ColumnType::Json => cursor.read_u8().unwrap() as u16,
-                ColumnType::TinyBlob => cursor.read_u8().unwrap() as u16,
-                ColumnType::MediumBlob => cursor.read_u8().unwrap() as u16,
-                ColumnType::LongBlob => cursor.read_u8().unwrap() as u16,
-                ColumnType::Blob => cursor.read_u8().unwrap() as u16,
-                ColumnType::Float => cursor.read_u8().unwrap() as u16,
-                ColumnType::Double => cursor.read_u8().unwrap() as u16,
-                ColumnType::TimeStamp2 => cursor.read_u8().unwrap() as u16,
-                ColumnType::DateTime2 => cursor.read_u8().unwrap() as u16,
-                ColumnType::Time2 => cursor.read_u8().unwrap() as u16,
+                ColumnType::Geometry => cursor.read_u8()? as u16,
+                ColumnType::Json => cursor.read_u8()? as u16,
+                ColumnType::TinyBlob => cursor.read_u8()? as u16,
+                ColumnType::MediumBlob => cursor.read_u8()? as u16,
+                ColumnType::LongBlob => cursor.read_u8()? as u16,
+                ColumnType::Blob => cursor.read_u8()? as u16,
+                ColumnType::Float => cursor.read_u8()? as u16,
+                ColumnType::Double => cursor.read_u8()? as u16,
+                ColumnType::TimeStamp2 => cursor.read_u8()? as u16,
+                ColumnType::DateTime2 => cursor.read_u8()? as u16,
+                ColumnType::Time2 => cursor.read_u8()? as u16,
                 // 2 bytes little endian
-                ColumnType::Bit => cursor.read_u16::<LittleEndian>().unwrap(),
-                ColumnType::VarChar => cursor.read_u16::<LittleEndian>().unwrap(),
-                ColumnType::VarString => cursor.read_u16::<LittleEndian>().unwrap(),
-                ColumnType::NewDecimal => cursor.read_u16::<LittleEndian>().unwrap(),
+                ColumnType::Bit => cursor.read_u16::<LittleEndian>()?,
+                ColumnType::VarChar => cursor.read_u16::<LittleEndian>()?,
+                ColumnType::VarString => cursor.read_u16::<LittleEndian>()?,
+                ColumnType::NewDecimal => cursor.read_u16::<LittleEndian>()?,
                 // 2 bytes big endian
-                ColumnType::Enum => cursor.read_u16::<BigEndian>().unwrap(),
-                ColumnType::Set => cursor.read_u16::<BigEndian>().unwrap(),
-                ColumnType::String => cursor.read_u16::<BigEndian>().unwrap(),
+                ColumnType::Enum => cursor.read_u16::<BigEndian>()?,
+                ColumnType::Set => cursor.read_u16::<BigEndian>()?,
+                ColumnType::String => cursor.read_u16::<BigEndian>()?,
                 _ => 0,
             }
         }
-        metadata
+        Ok(metadata)
     }
 }

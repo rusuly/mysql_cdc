@@ -1,5 +1,5 @@
-use crate::providers::mariadb::gtid::gtid::Gtid;
 use crate::providers::mariadb::gtid::gtid_list::GtidList;
+use crate::{errors::Error, providers::mariadb::gtid::gtid::Gtid};
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::Cursor;
 
@@ -13,19 +13,19 @@ pub struct GtidListEvent {
 
 impl GtidListEvent {
     /// Parses events in MariaDB.
-    pub fn parse(cursor: &mut Cursor<&[u8]>) -> Self {
-        let gtid_list_len = cursor.read_u32::<LittleEndian>().unwrap();
+    pub fn parse(cursor: &mut Cursor<&[u8]>) -> Result<Self, Error> {
+        let gtid_list_len = cursor.read_u32::<LittleEndian>()?;
 
         let mut gtid_list = GtidList::new();
         for _i in 0..gtid_list_len {
-            let domain_id = cursor.read_u32::<LittleEndian>().unwrap();
-            let server_id = cursor.read_u32::<LittleEndian>().unwrap();
-            let sequence = cursor.read_u64::<LittleEndian>().unwrap();
+            let domain_id = cursor.read_u32::<LittleEndian>()?;
+            let server_id = cursor.read_u32::<LittleEndian>()?;
+            let sequence = cursor.read_u64::<LittleEndian>()?;
 
             let gtid = Gtid::new(domain_id, server_id, sequence);
             gtid_list.gtids.push(gtid);
         }
 
-        Self { gtid_list }
+        Ok(Self { gtid_list })
     }
 }

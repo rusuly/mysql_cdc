@@ -1,3 +1,5 @@
+use crate::errors::Error;
+
 pub enum MetadataType {
     Signedness = 1,
     DefaultCharset = 2,
@@ -14,8 +16,8 @@ pub enum MetadataType {
 }
 
 impl MetadataType {
-    pub fn from_code(code: u8) -> Self {
-        match code {
+    pub fn from_code(code: u8) -> Result<Self, Error> {
+        let value = match code {
             1 => MetadataType::Signedness,
             2 => MetadataType::DefaultCharset,
             3 => MetadataType::ColumnCharset,
@@ -28,7 +30,12 @@ impl MetadataType {
             10 => MetadataType::EnumAndSetDefaultCharset,
             11 => MetadataType::EnumAndSetColumnCharset,
             12 => MetadataType::ColumnVisibility,
-            _ => panic!("Table metadata type {} is not supported", code),
-        }
+            _ => {
+                return Err(Error::String(
+                    format!("Table metadata type {} is not supported", code).to_string(),
+                ))
+            }
+        };
+        Ok(value)
     }
 }

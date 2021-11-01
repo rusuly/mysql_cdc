@@ -1,6 +1,8 @@
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::Cursor;
 
+use crate::errors::Error;
+
 /// Binlog event header version 4. Header size is 19 bytes.
 /// See <a href="https://mariadb.com/kb/en/library/2-binlog-event-header/">MariaDB docs</a>
 /// See <a href="https://dev.mysql.com/doc/internals/en/binlog-version.html">MySQL docs</a>
@@ -27,15 +29,15 @@ pub struct EventHeader {
 }
 
 impl EventHeader {
-    pub fn parse(slice: &[u8]) -> Self {
+    pub fn parse(slice: &[u8]) -> Result<Self, Error> {
         let mut cursor = Cursor::new(slice);
-        Self {
-            timestamp: cursor.read_u32::<LittleEndian>().unwrap(),
-            event_type: cursor.read_u8().unwrap(),
-            server_id: cursor.read_u32::<LittleEndian>().unwrap(),
-            event_length: cursor.read_u32::<LittleEndian>().unwrap(),
-            next_event_position: cursor.read_u32::<LittleEndian>().unwrap(),
-            event_flags: cursor.read_u16::<LittleEndian>().unwrap(),
-        }
+        Ok(Self {
+            timestamp: cursor.read_u32::<LittleEndian>()?,
+            event_type: cursor.read_u8()?,
+            server_id: cursor.read_u32::<LittleEndian>()?,
+            event_length: cursor.read_u32::<LittleEndian>()?,
+            next_event_position: cursor.read_u32::<LittleEndian>()?,
+            event_flags: cursor.read_u16::<LittleEndian>()?,
+        })
     }
 }

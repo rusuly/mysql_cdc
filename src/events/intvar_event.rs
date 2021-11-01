@@ -1,6 +1,8 @@
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::Cursor;
 
+use crate::errors::Error;
+
 /// Generated when an auto increment column or LAST_INSERT_ID() function are used.
 /// <a href="https://mariadb.com/kb/en/library/intvar_event/">See more</a>
 #[derive(Debug)]
@@ -17,10 +19,10 @@ pub struct IntVarEvent {
 
 impl IntVarEvent {
     /// Supports all versions of MariaDB and MySQL.
-    pub fn parse(cursor: &mut Cursor<&[u8]>) -> Self {
-        let intvar_type = cursor.read_u8().unwrap();
-        let value = cursor.read_u64::<LittleEndian>().unwrap();
+    pub fn parse(cursor: &mut Cursor<&[u8]>) -> Result<Self, Error> {
+        let intvar_type = cursor.read_u8()?;
+        let value = cursor.read_u64::<LittleEndian>()?;
 
-        Self { intvar_type, value }
+        Ok(Self { intvar_type, value })
     }
 }

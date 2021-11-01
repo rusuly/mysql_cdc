@@ -1,3 +1,4 @@
+use crate::errors::Error;
 use crate::events::row_events::row_data::UpdateRowData;
 use crate::events::row_events::row_parser::{parse_head, parse_update_row_data_list};
 use crate::events::table_map_event::TableMapEvent;
@@ -35,24 +36,24 @@ impl UpdateRowsEvent {
         cursor: &mut Cursor<&[u8]>,
         table_map: &HashMap<u64, TableMapEvent>,
         row_event_version: u8,
-    ) -> Self {
-        let (table_id, flags, columns_number) = parse_head(cursor, row_event_version);
-        let columns_before_update = read_bitmap_little_endian(cursor, columns_number);
-        let columns_after_update = read_bitmap_little_endian(cursor, columns_number);
+    ) -> Result<Self, Error> {
+        let (table_id, flags, columns_number) = parse_head(cursor, row_event_version)?;
+        let columns_before_update = read_bitmap_little_endian(cursor, columns_number)?;
+        let columns_after_update = read_bitmap_little_endian(cursor, columns_number)?;
         let rows = parse_update_row_data_list(
             cursor,
             table_map,
             table_id,
             &columns_before_update,
             &columns_after_update,
-        );
-        Self {
+        )?;
+        Ok(Self {
             table_id,
             flags,
             columns_number,
             columns_before_update,
             columns_after_update,
             rows,
-        }
+        })
     }
 }

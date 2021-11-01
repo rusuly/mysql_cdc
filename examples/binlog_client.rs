@@ -1,18 +1,19 @@
 use mysql_cdc::binlog_client::BinlogClient;
 use mysql_cdc::binlog_options::BinlogOptions;
+use mysql_cdc::errors::Error;
 use mysql_cdc::providers::mariadb::gtid::gtid_list::GtidList;
 use mysql_cdc::providers::mysql::gtid::gtid_set::GtidSet;
 use mysql_cdc::replica_options::ReplicaOptions;
 use mysql_cdc::ssl_mode::SslMode;
 
-fn main() {
+fn main() -> Result<(), Error> {
     // Start replication from MariaDB GTID
-    let _options = BinlogOptions::from_mariadb_gtid(GtidList::parse("0-1-270"));
+    let _options = BinlogOptions::from_mariadb_gtid(GtidList::parse("0-1-270")?);
 
     // Start replication from MySQL GTID
     let gtid_set =
         "d4c17f0c-4f11-11ea-93e3-325d3e1cd1c8:1-107, f442510a-2881-11ea-b1dd-27916133dbb2:1-7";
-    let _options = BinlogOptions::from_mysql_gtid(GtidSet::parse(gtid_set));
+    let _options = BinlogOptions::from_mysql_gtid(GtidSet::parse(gtid_set)?);
 
     // Start replication from the position
     let _options = BinlogOptions::from_position(String::from("mysql-bin.000008"), 195);
@@ -36,8 +37,10 @@ fn main() {
 
     let client = BinlogClient::new(options);
 
-    for (header, binlog_event) in client.replicate() {
+    for result in client.replicate()? {
+        let (header, event) = result?;
         println!("{:#?}", header);
-        println!("{:#?}", binlog_event);
+        println!("{:#?}", event);
     }
+    Ok(())
 }

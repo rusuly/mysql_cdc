@@ -1,5 +1,5 @@
 use byteorder::{LittleEndian, WriteBytesExt};
-use std::io::Cursor;
+use std::io::{self, Cursor};
 
 use crate::constants::capability_flags;
 
@@ -28,23 +28,19 @@ impl SslRequestCommand {
         }
     }
 
-    pub fn serialize(&self) -> Vec<u8> {
+    pub fn serialize(&self) -> Result<Vec<u8>, io::Error> {
         let mut vec = Vec::new();
         let mut cursor = Cursor::new(&mut vec);
 
-        cursor
-            .write_u32::<LittleEndian>(self.client_capabilities)
-            .unwrap();
-        cursor
-            .write_u32::<LittleEndian>(self.max_packet_size)
-            .unwrap();
-        cursor.write_u8(self.client_collation).unwrap();
+        cursor.write_u32::<LittleEndian>(self.client_capabilities)?;
+        cursor.write_u32::<LittleEndian>(self.max_packet_size)?;
+        cursor.write_u8(self.client_collation)?;
 
         // Fill reserved bytes
         for _number in 0..23 {
-            cursor.write_u8(0).unwrap();
+            cursor.write_u8(0)?;
         }
 
-        vec
+        Ok(vec)
     }
 }

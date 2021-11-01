@@ -1,3 +1,4 @@
+use crate::errors::Error;
 use crate::providers::mysql::gtid::gtid::Gtid;
 use crate::providers::mysql::gtid::interval::Interval;
 use crate::providers::mysql::gtid::uuid::Uuid;
@@ -25,9 +26,11 @@ impl UuidSet {
     }
 
     /// Adds a gtid value to the UuidSet.
-    pub fn add_gtid(&mut self, gtid: Gtid) -> bool {
+    pub fn add_gtid(&mut self, gtid: Gtid) -> Result<bool, Error> {
         if self.source_id.data != gtid.source_id.data {
-            panic!("SourceId of the passed gtid doesn't belong to the UuidSet");
+            return Err(Error::String(
+                "SourceId of the passed gtid doesn't belong to the UuidSet".to_string(),
+            ));
         }
 
         let index = find_interval_index(&self.intervals, gtid.transaction_id);
@@ -41,7 +44,7 @@ impl UuidSet {
                 interval.end = gtid.transaction_id;
                 added = true;
             } else if interval.start <= gtid.transaction_id && gtid.transaction_id <= interval.end {
-                return false;
+                return Ok(false);
             }
         }
         if !added {
@@ -51,7 +54,7 @@ impl UuidSet {
         if self.intervals.len() > 1 {
             collapse_intervals(&mut self.intervals);
         }
-        true
+        Ok(true)
     }
 }
 

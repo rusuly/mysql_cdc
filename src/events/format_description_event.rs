@@ -1,7 +1,7 @@
-use crate::constants;
 use crate::constants::checksum_type::ChecksumType;
 use crate::events::event_header::EventHeader;
 use crate::events::event_type::EventType;
+use crate::{constants, errors::Error};
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::{Cursor, Read, Seek, SeekFrom};
 
@@ -25,28 +25,25 @@ pub struct FormatDescriptionEvent {
 
 impl FormatDescriptionEvent {
     /// Supports all versions of MariaDB and MySQL 5.0+ (V4 header format).
-    pub fn parse(cursor: &mut Cursor<&[u8]>, header: &EventHeader) -> Self {
-        let binlog_version = cursor.read_u16::<LittleEndian>().unwrap();
+    pub fn parse(cursor: &mut Cursor<&[u8]>, header: &EventHeader) -> Result<Self, Error> {
+        let binlog_version = cursor.read_u16::<LittleEndian>()?;
 
         // Read server version
         let mut server_version = [0u8; 50];
-        cursor.read_exact(&mut server_version).unwrap();
+        cursor.read_exact(&mut server_version)?;
         let mut slice: &[u8] = &server_version;
         if let Some(zero_index) = server_version.iter().position(|&b| b == 0) {
             slice = &server_version[..zero_index];
         }
-        let server_version = std::str::from_utf8(slice).unwrap().to_string();
+        let server_version = std::str::from_utf8(slice)?.to_string();
 
         // Redundant timestamp & header length which is always 19
-        cursor.seek(SeekFrom::Current(5)).unwrap();
+        cursor.seek(SeekFrom::Current(5))?;
 
         // Get size of the event payload to determine beginning of the checksum part
-        cursor
-            .seek(SeekFrom::Current(
-                EventType::FormatDescriptionEvent as i64 - 1,
-            ))
-            .unwrap();
-        let payload_length = cursor.read_u8().unwrap();
+        let seek_len = EventType::FormatDescriptionEvent as i64 - 1;
+        cursor.seek(SeekFrom::Current(seek_len))?;
+        let payload_length = cursor.read_u8()?;
 
         let mut checksum_type = ChecksumType::None;
         if payload_length != header.event_length as u8 - constants::EVENT_HEADER_SIZE as u8 {
@@ -54,14 +51,14 @@ impl FormatDescriptionEvent {
                 - EVENT_TYPES_OFFSET as i64
                 - EventType::FormatDescriptionEvent as i64;
 
-            cursor.seek(SeekFrom::Current(skip)).unwrap();
-            checksum_type = ChecksumType::from_code(cursor.read_u8().unwrap());
+            cursor.seek(SeekFrom::Current(skip))?;
+            checksum_type = ChecksumType::from_code(cursor.read_u8()?)?;
         }
 
-        Self {
+        Ok(Self {
             binlog_version,
             server_version,
             checksum_type,
-        }
+        })
     }
 }

@@ -1,5 +1,5 @@
-use crate::events::event_header::EventHeader;
 use crate::providers::mariadb::gtid::gtid::Gtid;
+use crate::{errors::Error, events::event_header::EventHeader};
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::Cursor;
 
@@ -16,12 +16,12 @@ pub struct GtidEvent {
 
 impl GtidEvent {
     /// Parses events in MariaDB 10.0.2+.
-    pub fn parse(cursor: &mut Cursor<&[u8]>, header: &EventHeader) -> Self {
-        let sequence = cursor.read_u64::<LittleEndian>().unwrap();
-        let domain_id = cursor.read_u32::<LittleEndian>().unwrap();
-        let flags = cursor.read_u8().unwrap();
+    pub fn parse(cursor: &mut Cursor<&[u8]>, header: &EventHeader) -> Result<Self, Error> {
+        let sequence = cursor.read_u64::<LittleEndian>()?;
+        let domain_id = cursor.read_u32::<LittleEndian>()?;
+        let flags = cursor.read_u8()?;
 
         let gtid = Gtid::new(domain_id, header.server_id, sequence);
-        Self { gtid, flags }
+        Ok(Self { gtid, flags })
     }
 }

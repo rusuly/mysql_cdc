@@ -1,3 +1,4 @@
+use crate::errors::Error;
 use crate::providers::mariadb::gtid::gtid::Gtid;
 use std::collections::HashSet;
 use std::fmt;
@@ -15,9 +16,9 @@ impl GtidList {
     }
 
     /// Parses from string representation.
-    pub fn parse(value: &str) -> Self {
+    pub fn parse(value: &str) -> Result<Self, Error> {
         if value.is_empty() {
-            return GtidList::new();
+            return Ok(GtidList::new());
         }
 
         let value = value.replace("\n", "");
@@ -28,12 +29,14 @@ impl GtidList {
 
         for gtid in gtid_list {
             let components = gtid.split('-').collect::<Vec<&str>>();
-            let domain_id: u32 = components[0].parse().unwrap();
-            let server_id: u32 = components[1].parse().unwrap();
-            let sequence: u64 = components[2].parse().unwrap();
+            let domain_id: u32 = components[0].parse()?;
+            let server_id: u32 = components[1].parse()?;
+            let sequence: u64 = components[2].parse()?;
 
             if domain_map.contains(&domain_id) {
-                panic!("GtidList must consist of unique domain ids");
+                return Err(Error::String(format!(
+                    "GtidList must consist of unique domain ids"
+                )));
             } else {
                 domain_map.insert(domain_id);
             }
@@ -41,7 +44,7 @@ impl GtidList {
             gtids.push(Gtid::new(domain_id, server_id, sequence));
         }
 
-        Self { gtids }
+        Ok(Self { gtids })
     }
 
     /// Adds a gtid value to the GtidList.

@@ -1,3 +1,4 @@
+use crate::errors::Error;
 use crate::providers::mysql::gtid::gtid::Gtid;
 use crate::providers::mysql::gtid::interval::Interval;
 use crate::providers::mysql::gtid::uuid::Uuid;
@@ -23,9 +24,9 @@ impl GtidSet {
     }
 
     /// Parses <see cref="GtidSet"/> from string representation.
-    pub fn parse(gtid_set: &str) -> Self {
+    pub fn parse(gtid_set: &str) -> Result<Self, Error> {
         if gtid_set.is_empty() {
-            return GtidSet::new();
+            return Ok(GtidSet::new());
         }
 
         let gtid_set = gtid_set.replace("\n", "");
@@ -34,7 +35,7 @@ impl GtidSet {
         let mut result = HashMap::new();
         for uuid_set in uuid_sets {
             let source_id: String = uuid_set.chars().take(UUID_LENGTH).collect();
-            let source_id = Uuid::parse(source_id);
+            let source_id = Uuid::parse(source_id)?;
 
             let mut intervals = Vec::new();
             let ranges: String = uuid_set.chars().skip(UUID_LENGTH + 1).collect();
@@ -43,26 +44,26 @@ impl GtidSet {
             for token in ranges {
                 let range = token.split('-').collect::<Vec<&str>>();
                 let interval = match range.len() {
-                    1 => Interval::new(range[0].parse().unwrap(), range[0].parse().unwrap()),
-                    2 => Interval::new(range[0].parse().unwrap(), range[1].parse().unwrap()),
-                    _ => panic!("Invalid interval format {}", token),
+                    1 => Interval::new(range[0].parse()?, range[0].parse()?),
+                    2 => Interval::new(range[0].parse()?, range[1].parse()?),
+                    _ => return Err(Error::String(format!("Invalid interval format {}", token))),
                 };
                 intervals.push(interval);
             }
             result.insert(source_id.uuid.clone(), UuidSet::new(source_id, intervals));
         }
 
-        Self { uuid_sets: result }
+        Ok(Self { uuid_sets: result })
     }
 
     /// Adds a gtid value to the GtidSet.
-    pub fn add_gtid(&mut self, gtid: Gtid) -> bool {
+    pub fn add_gtid(&mut self, gtid: Gtid) -> Result<bool, Error> {
         let uuid_set = self
             .uuid_sets
             .entry(gtid.source_id.uuid.clone())
             .or_insert(UuidSet::new(gtid.source_id.clone(), Vec::new()));
 
-        uuid_set.add_gtid(gtid)
+        Ok(uuid_set.add_gtid(gtid)?)
     }
 }
 

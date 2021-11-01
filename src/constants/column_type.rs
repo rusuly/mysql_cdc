@@ -1,3 +1,5 @@
+use crate::errors::Error;
+
 /// MySql column types.
 /// See <a href="https://mariadb.com/kb/en/library/resultset/#column-definition-packet">MariaDB docs</a>
 /// See <a href="https://dev.mysql.com/doc/internals/en/com-query-response.html#column-type">MySQL docs</a>
@@ -98,8 +100,8 @@ pub enum ColumnType {
 }
 
 impl ColumnType {
-    pub fn from_code(code: u8) -> Self {
-        match code {
+    pub fn from_code(code: u8) -> Result<Self, Error> {
+        let value = match code {
             0 => ColumnType::Decimal,
             1 => ColumnType::Tiny,
             2 => ColumnType::Short,
@@ -131,7 +133,8 @@ impl ColumnType {
             253 => ColumnType::VarString,
             254 => ColumnType::String,
             255 => ColumnType::Geometry,
-            _ => panic!("Unknown column type {}", code),
-        }
+            _ => return Err(Error::String(format!("Unknown column type {}", code))),
+        };
+        Ok(value)
     }
 }

@@ -1,4 +1,4 @@
-use crate::extensions::read_null_term_string;
+use crate::{errors::Error, extensions::read_null_term_string};
 use std::io::Cursor;
 
 /// Authentication Switch Request.
@@ -10,15 +10,15 @@ pub struct AuthPluginSwitchPacket {
 }
 
 impl AuthPluginSwitchPacket {
-    pub fn parse(packet: &[u8]) -> Self {
+    pub fn parse(packet: &[u8]) -> Result<Self, Error> {
         let mut cursor = Cursor::new(packet);
 
-        let auth_plugin_name = read_null_term_string(&mut cursor);
-        let auth_plugin_data = read_null_term_string(&mut cursor);
+        let auth_plugin_name = read_null_term_string(&mut cursor)?;
+        let auth_plugin_data = read_null_term_string(&mut cursor)?;
 
-        Self {
+        Ok(Self {
             auth_plugin_name,
             auth_plugin_data,
-        }
+        })
     }
 }

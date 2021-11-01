@@ -1,6 +1,6 @@
 use crate::commands::command_type::CommandType;
 use byteorder::{LittleEndian, WriteBytesExt};
-use std::io::{Cursor, Write};
+use std::io::{self, Cursor, Write};
 
 /// Requests binlog event stream.
 /// <a href="https://mariadb.com/kb/en/library/com_binlog_dump/">See more</a>
@@ -21,18 +21,16 @@ impl DumpBinlogCommand {
         }
     }
 
-    pub fn serialize(&self) -> Vec<u8> {
+    pub fn serialize(&self) -> Result<Vec<u8>, io::Error> {
         let mut vec = Vec::new();
         let mut cursor = Cursor::new(&mut vec);
 
-        cursor.write_u8(CommandType::BinlogDump as u8).unwrap();
-        cursor
-            .write_u32::<LittleEndian>(self.binlog_position)
-            .unwrap();
-        cursor.write_u16::<LittleEndian>(self.flags).unwrap();
-        cursor.write_u32::<LittleEndian>(self.server_id).unwrap();
-        cursor.write(self.binlog_filename.as_bytes()).unwrap();
+        cursor.write_u8(CommandType::BinlogDump as u8)?;
+        cursor.write_u32::<LittleEndian>(self.binlog_position)?;
+        cursor.write_u16::<LittleEndian>(self.flags)?;
+        cursor.write_u32::<LittleEndian>(self.server_id)?;
+        cursor.write(self.binlog_filename.as_bytes())?;
 
-        vec
+        Ok(vec)
     }
 }

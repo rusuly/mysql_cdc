@@ -1,3 +1,5 @@
+use crate::errors::Error;
+
 /// Checksum type used in a binlog file.
 #[derive(Clone, Copy, Debug)]
 pub enum ChecksumType {
@@ -9,19 +11,23 @@ pub enum ChecksumType {
 }
 
 impl ChecksumType {
-    pub fn from_code(code: u8) -> Self {
+    pub fn from_code(code: u8) -> Result<Self, Error> {
         match code {
-            0 => ChecksumType::None,
-            1 => ChecksumType::Crc32,
-            _ => panic!("The master checksum type is not supported: {}", code),
+            0 => Ok(ChecksumType::None),
+            1 => Ok(ChecksumType::Crc32),
+            _ => Err(Error::String(
+                format!("The master checksum type is not supported: {}", code).to_string(),
+            )),
         }
     }
 
-    pub fn from_name(name: &str) -> Self {
+    pub fn from_name(name: &str) -> Result<Self, Error> {
         match name {
-            "NONE" => ChecksumType::None,
-            "CRC32" => ChecksumType::Crc32,
-            _ => panic!("The master checksum type is not supported: {}", name),
+            "NONE" => Ok(ChecksumType::None),
+            "CRC32" => Ok(ChecksumType::Crc32),
+            _ => Err(Error::String(
+                format!("The master checksum type is not supported: {}", name).to_string(),
+            )),
         }
     }
 }

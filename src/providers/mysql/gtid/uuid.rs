@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::errors::Error;
+
 /// Represents Uuid with little-endian bytes order unlike big-endian Guid.
 #[derive(Clone, Debug)]
 pub struct Uuid {
@@ -18,16 +20,16 @@ impl Uuid {
     }
 
     /// Parses Uuid from string representation.
-    pub fn parse(uuid: String) -> Self {
+    pub fn parse(uuid: String) -> Result<Self, Error> {
         let hex = uuid.replace("-", "");
-        let vec = hex::decode(hex).unwrap();
+        let vec = hex::decode(hex)?;
 
         let mut data = [0u8; 16];
         for i in 0..16 {
             data[i] = vec[i];
         }
 
-        Self { data, uuid }
+        Ok(Self { data, uuid })
     }
 }
 

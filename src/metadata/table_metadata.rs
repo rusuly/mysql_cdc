@@ -1,9 +1,10 @@
 use crate::constants::column_type::ColumnType;
+use crate::errors::Error;
 use crate::extensions::{read_len_enc_num, read_len_enc_str};
 use crate::metadata::default_charset::DefaultCharset;
 use crate::metadata::metadata_type::MetadataType;
 use byteorder::ReadBytesExt;
-use std::io::{Cursor, Read};
+use std::io::{self, Cursor, Read};
 
 /// Contains metadata for table columns.
 /// <a href="https://dev.mysql.com/doc/dev/mysql-server/latest/classbinary__log_1_1Table__map__event.html">See more</a>
@@ -47,7 +48,7 @@ pub struct TableMetadata {
 }
 
 impl TableMetadata {
-    pub fn parse(cursor: &mut Cursor<&[u8]>, column_types: &[u8]) -> Self {
+    pub fn parse(cursor: &mut Cursor<&[u8]>, column_types: &[u8]) -> Result<Self, Error> {
         let mut signedness = None;
         let mut default_charset = None;
         let mut column_charsets = None;
@@ -62,55 +63,56 @@ impl TableMetadata {
         let mut column_visibility = None;
 
         while cursor.position() < cursor.get_ref().len() as u64 {
-            let metadata_type = MetadataType::from_code(cursor.read_u8().unwrap());
-            let metadata_length = read_len_enc_num(cursor);
+            let metadata_type = MetadataType::from_code(cursor.read_u8()?)?;
+            let metadata_length = read_len_enc_num(cursor)?;
 
             let mut metadata = vec![0u8; metadata_length];
-            cursor.read_exact(&mut metadata).unwrap();
+            cursor.read_exact(&mut metadata)?;
 
             let mut buffer = Cursor::new(metadata.as_slice());
             match metadata_type {
                 MetadataType::Signedness => {
-                    let count = get_numeric_column_count(column_types);
-                    signedness = Some(read_bitmap_reverted(&mut buffer, count));
+                    let count = get_numeric_column_count(column_types)?;
+                    signedness = Some(read_bitmap_reverted(&mut buffer, count)?);
                 }
                 MetadataType::DefaultCharset => {
-                    default_charset = Some(parse_default_charser(&mut buffer));
+                    default_charset = Some(parse_default_charser(&mut buffer)?);
                 }
                 MetadataType::ColumnCharset => {
-                    column_charsets = Some(parse_int_array(&mut buffer));
+                    column_charsets = Some(parse_int_array(&mut buffer)?);
                 }
                 MetadataType::ColumnName => {
-                    column_names = Some(parse_string_array(&mut buffer));
+                    column_names = Some(parse_string_array(&mut buffer)?);
                 }
                 MetadataType::SetStrValue => {
-                    set_string_values = Some(parse_type_values(&mut buffer));
+                    set_string_values = Some(parse_type_values(&mut buffer)?);
                 }
                 MetadataType::EnumStrValue => {
-                    enum_string_values = Some(parse_type_values(&mut buffer));
+                    enum_string_values = Some(parse_type_values(&mut buffer)?);
                 }
                 MetadataType::GeometryType => {
-                    geometry_types = Some(parse_int_array(&mut buffer));
+                    geometry_types = Some(parse_int_array(&mut buffer)?);
                 }
                 MetadataType::SimplePrimaryKey => {
-                    simple_primary_keys = Some(parse_int_array(&mut buffer));
+                    simple_primary_keys = Some(parse_int_array(&mut buffer)?);
                 }
                 MetadataType::PrimaryKeyWithPrefix => {
-                    primary_keys_with_prefix = Some(parse_int_map(&mut buffer));
+                    primary_keys_with_prefix = Some(parse_int_map(&mut buffer)?);
                 }
                 MetadataType::EnumAndSetDefaultCharset => {
-                    enum_and_set_default_charset = Some(parse_default_charser(&mut buffer));
+                    enum_and_set_default_charset = Some(parse_default_charser(&mut buffer)?);
                 }
                 MetadataType::EnumAndSetColumnCharset => {
-                    enum_and_set_column_charsets = Some(parse_int_array(&mut buffer));
+                    enum_and_set_column_charsets = Some(parse_int_array(&mut buffer)?);
                 }
                 MetadataType::ColumnVisibility => {
-                    column_visibility = Some(read_bitmap_reverted(&mut buffer, column_types.len()));
+                    column_visibility =
+                        Some(read_bitmap_reverted(&mut buffer, column_types.len())?);
                 }
             }
         }
 
-        Self {
+        Ok(Self {
             signedness,
             default_charset,
             column_charsets,
@@ -123,62 +125,68 @@ impl TableMetadata {
             enum_and_set_default_charset,
             enum_and_set_column_charsets,
             column_visibility,
-        }
+        })
     }
 }
 
-fn parse_int_array(cursor: &mut Cursor<&[u8]>) -> Vec<u32> {
+fn parse_int_array(cursor: &mut Cursor<&[u8]>) -> Result<Vec<u32>, Error> {
     let mut result = Vec::new();
     while cursor.position() < cursor.get_ref().len() as u64 {
-        let value = read_len_enc_num(cursor);
+        let value = read_len_enc_num(cursor)?;
         result.push(value as u32);
     }
-    result
+    Ok(result)
 }
 
-fn parse_string_array(cursor: &mut Cursor<&[u8]>) -> Vec<String> {
+fn parse_string_array(cursor: &mut Cursor<&[u8]>) -> Result<Vec<String>, Error> {
     let mut result = Vec::new();
     while cursor.position() < cursor.get_ref().len() as u64 {
-        let value = read_len_enc_str(cursor);
+        let value = read_len_enc_str(cursor)?;
         result.push(value);
     }
-    result
+    Ok(result)
 }
 
-fn parse_int_map(cursor: &mut Cursor<&[u8]>) -> Vec<(u32, u32)> {
+fn parse_int_map(cursor: &mut Cursor<&[u8]>) -> Result<Vec<(u32, u32)>, Error> {
     let mut result = Vec::new();
     while cursor.position() < cursor.get_ref().len() as u64 {
-        let key = read_len_enc_num(cursor);
-        let value = read_len_enc_num(cursor);
+        let key = read_len_enc_num(cursor)?;
+        let value = read_len_enc_num(cursor)?;
         result.push((key as u32, value as u32));
     }
-    result
+    Ok(result)
 }
 
-fn parse_type_values(cursor: &mut Cursor<&[u8]>) -> Vec<Vec<String>> {
+fn parse_type_values(cursor: &mut Cursor<&[u8]>) -> Result<Vec<Vec<String>>, Error> {
     let mut result = Vec::new();
     while cursor.position() < cursor.get_ref().len() as u64 {
-        let length = read_len_enc_num(cursor);
+        let length = read_len_enc_num(cursor)?;
         let mut type_values = Vec::new();
         for _i in 0..length {
-            type_values.push(read_len_enc_str(cursor));
+            type_values.push(read_len_enc_str(cursor)?);
         }
         result.push(type_values);
     }
-    result
+    Ok(result)
 }
 
-fn parse_default_charser(cursor: &mut Cursor<&[u8]>) -> DefaultCharset {
-    let default_collation = read_len_enc_num(cursor);
-    let charset_collations = parse_int_map(cursor);
-    DefaultCharset::new(default_collation as u32, charset_collations)
+fn parse_default_charser(cursor: &mut Cursor<&[u8]>) -> Result<DefaultCharset, Error> {
+    let default_collation = read_len_enc_num(cursor)?;
+    let charset_collations = parse_int_map(cursor)?;
+    Ok(DefaultCharset::new(
+        default_collation as u32,
+        charset_collations,
+    ))
 }
 
-fn read_bitmap_reverted(cursor: &mut Cursor<&[u8]>, bits_number: usize) -> Vec<bool> {
+fn read_bitmap_reverted(
+    cursor: &mut Cursor<&[u8]>,
+    bits_number: usize,
+) -> Result<Vec<bool>, io::Error> {
     let mut result = vec![false; bits_number];
     let bytes_number = (bits_number + 7) / 8;
     for i in 0..bytes_number {
-        let value = cursor.read_u8().unwrap();
+        let value = cursor.read_u8()?;
         for y in 0..8 {
             let index = (i << 3) + y;
             if index == bits_number {
@@ -189,13 +197,13 @@ fn read_bitmap_reverted(cursor: &mut Cursor<&[u8]>, bits_number: usize) -> Vec<b
             result[index] = (value & (1 << (7 - y))) > 0;
         }
     }
-    result
+    Ok(result)
 }
 
-fn get_numeric_column_count(column_types: &[u8]) -> usize {
+fn get_numeric_column_count(column_types: &[u8]) -> Result<usize, Error> {
     let mut count = 0;
     for i in 0..column_types.len() {
-        match ColumnType::from_code(column_types[i]) {
+        match ColumnType::from_code(column_types[i])? {
             ColumnType::Tiny => count += 1,
             ColumnType::Short => count += 1,
             ColumnType::Int24 => count += 1,
@@ -207,5 +215,5 @@ fn get_numeric_column_count(column_types: &[u8]) -> usize {
             _ => (),
         }
     }
-    count
+    Ok(count)
 }
