@@ -36,7 +36,7 @@ impl UuidSet {
         let index = find_interval_index(&self.intervals, gtid.transaction_id);
         let mut added = false;
         if index < self.intervals.len() {
-            let mut interval = self.intervals[index];
+            let interval = &mut self.intervals[index];
             if interval.start == gtid.transaction_id + 1 {
                 interval.start = gtid.transaction_id;
                 added = true;
@@ -65,7 +65,7 @@ pub fn find_interval_index(intervals: &Vec<Interval>, transaction_id: u64) -> us
 
     while left_index < right_index {
         result_index = (left_index + right_index) / 2;
-        let interval = intervals[result_index];
+        let interval = &intervals[result_index];
         if interval.end < transaction_id {
             left_index = result_index + 1;
         } else if transaction_id < interval.start {
@@ -84,10 +84,12 @@ pub fn collapse_intervals(intervals: &mut Vec<Interval>) {
     let mut index = 0;
 
     while index < intervals.len() - 1 {
-        let mut left = intervals[index];
-        let right = intervals[index + 1];
-        if left.end + 1 == right.start {
-            left.end = right.end;
+        let right_start = intervals[index + 1].start;
+        let right_end = intervals[index + 1].end;
+
+        let mut left = &mut intervals[index];
+        if left.end + 1 == right_start {
+            left.end = right_end;
             intervals.remove(index + 1);
         } else {
             index += 1;

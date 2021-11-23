@@ -1,7 +1,7 @@
 use std::fmt;
 
 /// Represents contiguous transaction interval in GtidSet.
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Debug)]
 pub struct Interval {
     /// Gets first transaction id in the interval.
     pub start: u64,

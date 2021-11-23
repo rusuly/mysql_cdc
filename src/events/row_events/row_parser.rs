@@ -1,8 +1,8 @@
 use crate::constants::column_type::ColumnType;
 use crate::errors::Error;
 use crate::events::row_events::col_parser::{
-    parse_bit, parse_blob, parse_date, parse_date_time, parse_date_time2, parse_decimal,
-    parse_string, parse_time, parse_time2, parse_timestamp, parse_timestamp2, parse_year,
+    parse_bit, parse_blob, parse_date, parse_date_time, parse_date_time2, parse_string, parse_time,
+    parse_time2, parse_timestamp, parse_timestamp2, parse_year,
 };
 use crate::events::row_events::mysql_value::MySqlValue;
 use crate::events::row_events::row_data::{RowData, UpdateRowData};
@@ -11,6 +11,9 @@ use crate::extensions::{read_bitmap_little_endian, read_len_enc_num};
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::collections::HashMap;
 use std::io::{Cursor, Seek, SeekFrom};
+
+use super::actual_string_type::get_actual_string_type;
+use super::decimal::parse_decimal;
 
 pub const TABLE_MAP_NOT_FOUND: &str =
     "No preceding TableMapEvent event was found for the row event. \
@@ -183,29 +186,4 @@ fn parse_cell(
 /// Gets number of bits set in a bitmap.
 fn get_bits_number(bitmap: &Vec<bool>) -> usize {
     bitmap.iter().filter(|&x| *x == true).count()
-}
-
-/// Parses actual string type
-/// See: https://bugs.mysql.com/bug.php?id=37426
-/// See: https://github.com/mysql/mysql-server/blob/9c3a49ec84b521cb0b35383f119099b2eb25d4ff/sql/log_event.cc#L1988
-fn get_actual_string_type(column_type: &mut u8, metadata: &mut u16) {
-    // CHAR column type
-    if *metadata < 256 {
-        return;
-    }
-
-    // CHAR or ENUM or SET column types
-    let byte0 = (*metadata >> 8) as u8;
-    let byte1 = *metadata & 0xFF;
-
-    if (byte0 & 0x30) != 0x30 {
-        /* a long CHAR() field: see #37426 */
-        *metadata = byte1 | (((byte0 as u16 & 0x30) ^ 0x30) << 4);
-        *column_type = byte0 | 0x30;
-    } else {
-        if byte0 == ColumnType::Enum as u8 || byte0 == ColumnType::Set as u8 {
-            *column_type = byte0;
-        }
-        *metadata = byte1;
-    }
 }
