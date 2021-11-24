@@ -47,12 +47,17 @@
 //!         ..Default::default()
 //!     };
 //!
-//!     let client = BinlogClient::new(options);
+//!     let mut client = BinlogClient::new(options);
 //!
 //!     for result in client.replicate()? {
 //!         let (header, event) = result?;
 //!         println!("{:#?}", header);
 //!         println!("{:#?}", event);
+//!
+//!         // You process an event here
+//!
+//!         // After you processed the event, you need to update replication position
+//!         client.commit(&header, &event);
 //!     }
 //!     Ok(())
 //! }
@@ -93,6 +98,7 @@
 //! ```
 
 pub mod binlog_client;
+pub mod binlog_events;
 pub mod binlog_options;
 pub mod binlog_reader;
 pub mod errors;

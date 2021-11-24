@@ -51,12 +51,17 @@ fn main() -> Result<(), Error> {
         ..Default::default()
     };
 
-    let client = BinlogClient::new(options);
+    let mut client = BinlogClient::new(options);
 
     for result in client.replicate()? {
         let (header, event) = result?;
         println!("{:#?}", header);
         println!("{:#?}", event);
+
+        // You process an event here
+
+        // After you processed the event, you need to update replication position
+        client.commit(&header, &event);
     }
     Ok(())
 }

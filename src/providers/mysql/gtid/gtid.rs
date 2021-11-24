@@ -2,7 +2,7 @@ use crate::providers::mysql::gtid::uuid::Uuid;
 use std::fmt;
 
 /// MySQL 5.6+ representation of Gtid.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Gtid {
     /// Gets identifier of the original server that generated the event.
     pub source_id: Uuid,

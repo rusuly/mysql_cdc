@@ -35,12 +35,33 @@ fn main() -> Result<(), Error> {
         ..Default::default()
     };
 
-    let client = BinlogClient::new(options);
+    let mut client = BinlogClient::new(options);
 
     for result in client.replicate()? {
         let (header, event) = result?;
-        println!("{:#?}", header);
-        println!("{:#?}", event);
+        println!("Header: {:#?}", header);
+        println!("Event: {:#?}", event);
+
+        println!("Replication position before event processed");
+        print_position(&client);
+
+        // After you processed the event, you need to update replication position
+        client.commit(&header, &event);
+
+        println!("Replication position after event processed");
+        print_position(&client);
     }
     Ok(())
+}
+
+fn print_position(client: &BinlogClient) {
+    println!("Binlog Filename: {:#?}", client.options.binlog.filename);
+    println!("Binlog Position: {:#?}", client.options.binlog.position);
+
+    if let Some(x) = &client.options.binlog.gtid_list {
+        println!("MariaDB Gtid Position: {:#?}", x.to_string());
+    }
+    if let Some(x) = &client.options.binlog.gtid_set {
+        println!("MySQL Gtid Position: {:#?}", x.to_string());
+    }
 }

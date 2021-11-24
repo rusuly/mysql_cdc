@@ -1,4 +1,5 @@
 /// Command types are included in body headers to identify the commands
+#[allow(dead_code)]
 pub enum CommandType {
     Sleep = 0,
     Quit = 1,

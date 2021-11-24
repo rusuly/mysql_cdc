@@ -1,7 +1,7 @@
 use std::fmt;
 
 /// MariaDB 10.0.2+ representation of Gtid.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Gtid {
     /// Gets domain identifier in multi-master setup.
     pub domain_id: u32,
