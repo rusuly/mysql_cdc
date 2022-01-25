@@ -70,14 +70,14 @@ impl GtidSet {
 impl fmt::Display for GtidSet {
     /// Returns string representation of the GtidSet.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let str = self
+        let mut uuids = self
             .uuid_sets
             .values()
             .map(|x| x.to_string())
-            .collect::<Vec<String>>()
-            .join(",");
+            .collect::<Vec<String>>();
 
-        write!(f, "{}", str)
+        uuids.sort();
+        write!(f, "{}", uuids.join(","))
     }
 }
 

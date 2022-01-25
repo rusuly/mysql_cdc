@@ -25,9 +25,7 @@ impl Uuid {
         let vec = hex::decode(hex)?;
 
         let mut data = [0u8; 16];
-        for i in 0..16 {
-            data[i] = vec[i];
-        }
+        (0..16).for_each(|i| data[i] = vec[i]);
 
         Ok(Self { data, uuid })
     }

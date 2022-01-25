@@ -1,6 +1,6 @@
 [package]
 name = "mysql_cdc"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2018"
 authors = ["Ruslan Ulianets <ruslan.ulianets@gmail.com>"]
 description = "MySQL/MariaDB binlog change data capture (CDC) connector for Rust"
@@ -10,7 +10,7 @@ license = "MIT"
 
 [dependencies]
 byteorder = "1.4.3"
-sha-1 = "0.9.8"
-sha2 = "0.9.8"
-openssl = "0.10.36"
+sha-1 = "0.10.0"
+sha2 = "0.10.1"
+openssl = "0.10.38"
 hex = "0.4.3"
