@@ -1,4 +1,5 @@
 use crate::binlog_events::BinlogEvents;
+use crate::binlog_raw_events::BinlogRawEvents;
 use crate::constants::database_provider::DatabaseProvider;
 use crate::errors::Error;
 use crate::events::binlog_event::BinlogEvent;
@@ -31,6 +32,31 @@ impl BinlogClient {
             maria_gtid: None,
             mysql_gtid: None,
         }
+    }
+
+    pub fn replicate_raw(&mut self) -> Result<BinlogRawEvents, Error> {
+        let (mut channel, provider) = self.connect()?;
+
+        // Reset on reconnect
+        self.transaction = false;
+        self.maria_gtid = None;
+        self.mysql_gtid = None;
+
+        self.adjust_starting_position(&mut channel)?;
+        self.set_master_heartbeat(&mut channel)?;
+        let _ = self.set_master_binlog_checksum(&mut channel)?;
+
+        let server_id = if self.options.blocking {
+            self.options.server_id
+        } else {
+            0
+        };
+
+        match provider {
+            DatabaseProvider::MariaDB => replicate_mariadb(&mut channel, &self.options, server_id)?,
+            DatabaseProvider::MySQL => replicate_mysql(&mut channel, &self.options, server_id)?,
+        }
+        Ok(BinlogRawEvents::new(channel))
     }
 
     /// Replicates binlog events from the server

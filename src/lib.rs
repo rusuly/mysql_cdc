@@ -100,6 +100,7 @@
 pub mod binlog_client;
 pub mod binlog_events;
 pub mod binlog_options;
+pub mod binlog_raw_events;
 pub mod binlog_reader;
 pub mod errors;
 pub mod events;

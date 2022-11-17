@@ -1,7 +1,8 @@
 use crate::binlog_options::BinlogOptions;
+use crate::events::event_type::EventType;
 use crate::ssl_mode::SslMode;
+use std::collections::HashSet;
 use std::time::Duration;
-
 /// Settings used to connect to MySQL/MariaDB.
 pub struct ReplicaOptions {
     /// Port number to connect. Defaults to 3306.
@@ -39,6 +40,9 @@ pub struct ReplicaOptions {
     /// Defines the binlog coordinates that replication should start from.
     /// Defaults to BinlogOptions.FromEnd()
     pub binlog: BinlogOptions,
+
+    /// Defines the event type set to be included
+    pub included_events: Option<HashSet<EventType>>,
 }
 
 impl Default for ReplicaOptions {
@@ -54,6 +58,7 @@ impl Default for ReplicaOptions {
             blocking: true,
             heartbeat_interval: Duration::from_secs(30),
             binlog: BinlogOptions::from_end(),
+            included_events: None,
         }
     }
 }
