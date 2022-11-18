@@ -11,7 +11,7 @@ const UUID_LENGTH: usize = 36;
 
 /// Represents GtidSet from MySQL 5.6 and above.
 /// <a href="https://dev.mysql.com/doc/refman/8.0/en/replication-gtids-concepts.html">See more</a>
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GtidSet {
     /// Gets a list of UuidSet parts in the GtidSet.
     pub uuid_sets: HashMap<String, UuidSet>,

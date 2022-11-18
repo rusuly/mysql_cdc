@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// Represents replication state for a specific server.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UuidSet {
     /// Gets server uuid of the UuidSet.
     pub source_id: Uuid,
