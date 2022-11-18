@@ -1,5 +1,6 @@
 use crate::binlog_events::BinlogEvents;
 use crate::binlog_raw_events::BinlogRawEvents;
+use crate::constants::checksum_type::ChecksumType;
 use crate::constants::database_provider::DatabaseProvider;
 use crate::errors::Error;
 use crate::events::binlog_event::BinlogEvent;

@@ -29,7 +29,6 @@ fn main() -> Result<(), Error> {
 
         println!("Replication position before event processed");
         print_position(&client);
-
     }
     Ok(())
 }

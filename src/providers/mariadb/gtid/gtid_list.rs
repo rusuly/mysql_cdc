@@ -4,7 +4,8 @@ use std::collections::HashSet;
 use std::fmt;
 
 /// Represents GtidList from MariaDB.
-#[derive(Debug)]
+use serde::{Deserialize, Serialize};
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GtidList {
     /// Gets a list of Gtids per each domain.
     pub gtids: Vec<Gtid>,

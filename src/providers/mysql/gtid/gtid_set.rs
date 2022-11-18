@@ -3,6 +3,7 @@ use crate::providers::mysql::gtid::gtid::Gtid;
 use crate::providers::mysql::gtid::interval::Interval;
 use crate::providers::mysql::gtid::uuid::Uuid;
 use crate::providers::mysql::gtid::uuid_set::UuidSet;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
 
@@ -10,7 +11,7 @@ const UUID_LENGTH: usize = 36;
 
 /// Represents GtidSet from MySQL 5.6 and above.
 /// <a href="https://dev.mysql.com/doc/refman/8.0/en/replication-gtids-concepts.html">See more</a>
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GtidSet {
     /// Gets a list of UuidSet parts in the GtidSet.
     pub uuid_sets: HashMap<String, UuidSet>,

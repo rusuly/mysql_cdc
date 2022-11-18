@@ -1,7 +1,6 @@
+use serde::{Deserialize, Serialize};
 use std::fmt;
-
-/// MariaDB 10.0.2+ representation of Gtid.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Gtid {
     /// Gets domain identifier in multi-master setup.
     pub domain_id: u32,
