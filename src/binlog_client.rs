@@ -34,7 +34,7 @@ impl BinlogClient {
         }
     }
 
-    pub fn replicate_raw(&mut self) -> Result<BinlogRawEvents, Error> {
+    pub fn replicate_raw(&mut self) -> Result<(BinlogRawEvents, ChecksumType), Error> {
         let (mut channel, provider) = self.connect()?;
 
         // Reset on reconnect
@@ -44,7 +44,7 @@ impl BinlogClient {
 
         self.adjust_starting_position(&mut channel)?;
         self.set_master_heartbeat(&mut channel)?;
-        let _ = self.set_master_binlog_checksum(&mut channel)?;
+        let checksum = self.set_master_binlog_checksum(&mut channel)?;
 
         let server_id = if self.options.blocking {
             self.options.server_id
@@ -56,7 +56,7 @@ impl BinlogClient {
             DatabaseProvider::MariaDB => replicate_mariadb(&mut channel, &self.options, server_id)?,
             DatabaseProvider::MySQL => replicate_mysql(&mut channel, &self.options, server_id)?,
         }
-        Ok(BinlogRawEvents::new(channel))
+        Ok((BinlogRawEvents::new(channel), checksum))
     }
 
     /// Replicates binlog events from the server
