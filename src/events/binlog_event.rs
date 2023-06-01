@@ -8,6 +8,7 @@ use crate::events::row_events::update_rows_event::UpdateRowsEvent;
 use crate::events::row_events::write_rows_event::WriteRowsEvent;
 use crate::events::rows_query_event::RowsQueryEvent;
 use crate::events::table_map_event::TableMapEvent;
+use crate::events::uservar_event::UserVarEvent;
 use crate::events::xid_event::XidEvent;
 use crate::providers::mariadb::events::gtid_event::GtidEvent as MariaDbGtidEvent;
 use crate::providers::mariadb::events::gtid_list_event::GtidListEvent;
@@ -23,6 +24,7 @@ pub enum BinlogEvent {
     WriteRowsEvent(WriteRowsEvent),
     XidEvent(XidEvent),
     IntVarEvent(IntVarEvent),
+    UserVarEvent(UserVarEvent),
     QueryEvent(QueryEvent),
     TableMapEvent(TableMapEvent),
     RotateEvent(RotateEvent),

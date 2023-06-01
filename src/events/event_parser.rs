@@ -13,6 +13,7 @@ use crate::events::row_events::update_rows_event::UpdateRowsEvent;
 use crate::events::row_events::write_rows_event::WriteRowsEvent;
 use crate::events::rows_query_event::RowsQueryEvent;
 use crate::events::table_map_event::TableMapEvent;
+use crate::events::uservar_event::UserVarEvent;
 use crate::events::xid_event::XidEvent;
 use crate::providers::mariadb::events::gtid_event::GtidEvent as MariaDbGtidEvent;
 use crate::providers::mariadb::events::gtid_list_event::GtidListEvent;
@@ -60,6 +61,7 @@ impl EventParser {
             }
             EventType::RotateEvent => BinlogEvent::RotateEvent(RotateEvent::parse(&mut cursor)?),
             EventType::IntvarEvent => BinlogEvent::IntVarEvent(IntVarEvent::parse(&mut cursor)?),
+            EventType::UserVarEvent => BinlogEvent::UserVarEvent(UserVarEvent::parse(&mut cursor)?),
             EventType::QueryEvent => BinlogEvent::QueryEvent(QueryEvent::parse(&mut cursor)?),
             EventType::XidEvent => BinlogEvent::XidEvent(XidEvent::parse(&mut cursor)?),
             // Rows events used in MariaDB and MySQL from 5.1.15 to 5.6.
