@@ -2,7 +2,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io::{self, Read, Write};
 use std::net::TcpStream;
 
-use crate::constants::PACKET_HEADER_SIZE;
+use crate::constants::{PACKET_HEADER_SIZE, TIMEOUT_LATENCY_DELTA};
 use crate::replica_options::ReplicaOptions;
 
 pub struct PacketChannel {
@@ -13,6 +13,8 @@ impl PacketChannel {
     pub fn new(options: &ReplicaOptions) -> Result<Self, io::Error> {
         let address: String = format!("{}:{}", options.hostname, options.port.to_string());
         let stream = TcpStream::connect(address)?;
+        let read_timeout = options.heartbeat_interval + TIMEOUT_LATENCY_DELTA;
+        stream.set_read_timeout(Some(read_timeout))?;
         Ok(Self { stream })
     }
 

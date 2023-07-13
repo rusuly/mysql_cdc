@@ -19,6 +19,6 @@ pub const FIRST_EVENT_POSITION: usize = 4;
 
 /// Timeout constants
 /// Takes into account network latency.
-pub const TIMEOUT_DELTA: Duration = Duration::from_secs(1);
+pub const TIMEOUT_LATENCY_DELTA: Duration = Duration::from_secs(10);
 pub const TIMEOUT_MESSAGE: &str =
     "Could not receive a master heartbeat within the specified interval";
